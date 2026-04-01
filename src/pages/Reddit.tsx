@@ -1,0 +1,89 @@
+import { useMemo, useState } from 'react';
+import AppShell from '@/components/shell/AppShell';
+import ToolCard from '@/components/tools/ToolCard';
+import { cn } from '@/lib/utils';
+import {
+  POST_REFINDER_SYSTEM,
+  SMART_REPLIER_SYSTEM,
+} from '@/prompts/reddit';
+
+type ToolDef = {
+  id: string;
+  title: string;
+  shortName: string;
+  description: string;
+  systemPrompt: string;
+};
+
+export default function Reddit() {
+  const tools: ToolDef[] = useMemo(
+    () => [
+      {
+        id: 'reddit-post-refiner',
+        title: '✨ 帖子神策手 (Post Refiner)',
+        shortName: '✨ 帖子神策手',
+        description: '把你的原始想法重写成可直接发布的 Reddit 帖子结构。',
+        systemPrompt: POST_REFINDER_SYSTEM,
+      },
+      {
+        id: 'reddit-smart-replier',
+        title: '💬 神回复生成器 (Smart Replier)',
+        shortName: '💬 神回复生成器',
+        description: '生成 3 组"像真人"的回复候选，适合评论区互动。',
+        systemPrompt: SMART_REPLIER_SYSTEM,
+      },
+    ],
+    []
+  );
+
+  const [activeToolId, setActiveToolId] = useState<string>(tools[0]?.id);
+  const activeTool = tools.find((t) => t.id === activeToolId) ?? tools[0];
+
+  return (
+    <AppShell title='营销阵地' subtitle='Reddit'>
+      {/* Master-Detail Layout */}
+      <div className='grid grid-cols-1 gap-0 md:grid-cols-[285px_1fr]'>
+        {/* Left: Tool Menu List (20%~25%) */}
+        <div className='pr-0 md:pr-0 min-h-[714px] self-stretch'>
+          <div className='px-2 pb-2 text-[12px] font-medium text-muted-foreground'>
+            Tools
+          </div>
+
+          <div className='space-y-1 px-1'>
+            {tools.map((tool) => {
+              const active = tool.id === activeToolId;
+              return (
+                <button
+                  key={tool.id}
+                  type='button'
+                  onClick={() => setActiveToolId(tool.id)}
+                  className={cn(
+                    'w-full rounded-md px-2 py-2 text-left',
+                    'text-[14px] text-foreground/85',
+                    'transition-colors',
+                    'hover:bg-gray-50 hover:text-foreground',
+                    active && 'bg-gray-100 font-semibold text-foreground'
+                  )}
+                >
+                  <span className='truncate'>{tool.shortName}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right: Active Tool Workspace (75%~80%) */}
+        <div className='mt-4 md:mt-0 md:border-l md:border-black/20 md:pl-6 self-stretch'>
+          {activeTool ? (
+            <ToolCard
+              toolId={activeTool.id}
+              title={activeTool.title}
+              description={activeTool.description}
+              systemPrompt={activeTool.systemPrompt}
+            />
+          ) : null}
+        </div>
+      </div>
+    </AppShell>
+  );
+}
