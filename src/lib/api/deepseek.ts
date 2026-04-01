@@ -37,7 +37,7 @@ export async function streamGenerate(
     throw new Error(`API 请求失败: ${response.status}`);
   }
 
-  const reader = response.body?.getReadableStream().getReader();
+  const reader = response.body?.getReader();
   const decoder = new TextDecoder();
 
   if (!reader) {
