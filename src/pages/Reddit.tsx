@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import {
   POST_REFINDER_SYSTEM,
   SMART_REPLIER_SYSTEM,
+  HELP_POST_SYSTEM,
 } from '@/prompts/reddit';
 
 type ToolDef = {
@@ -31,6 +32,13 @@ export default function Reddit() {
         shortName: '💬 神回复生成器',
         description: '生成 3 组"像真人"的回复候选，适合评论区互动。',
         systemPrompt: SMART_REPLIER_SYSTEM,
+      },
+      {
+        id: 'reddit-help-post',
+        title: '❓ Reddit求助帖',
+        shortName: '❓ Reddit求助帖',
+        description: '把你的中文问题改写成适合发布在 Reddit 的英文提问贴。',
+        systemPrompt: HELP_POST_SYSTEM,
       },
     ],
     []
