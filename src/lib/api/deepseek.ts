@@ -1,4 +1,5 @@
-import { API_CONFIG } from './config';
+import { PROVIDERS } from './config';
+import { useApiProviderStore } from './useApiProviderStore';
 
 export interface GenerateParams {
   systemPrompt: string;
@@ -16,14 +17,17 @@ export async function streamGenerate(
   onChunk: (text: string) => void,
   signal?: AbortSignal
 ): Promise<void> {
-  const response = await fetch(`${API_CONFIG.baseUrl}/chat/completions`, {
+  const provider = useApiProviderStore.getState().provider;
+  const config = PROVIDERS[provider];
+
+  const response = await fetch(`${config.baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_CONFIG.apiKey}`,
+      'Authorization': `Bearer ${config.apiKey}`,
     },
     body: JSON.stringify({
-      model: API_CONFIG.model,
+      model: config.model,
       messages: [
         { role: 'system', content: params.systemPrompt },
         { role: 'user', content: buildUserPrompt(params) },

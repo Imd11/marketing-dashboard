@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import Overview from "@/pages/Overview";
 import Reddit from "@/pages/Reddit";
 import ChannelPlaceholder from "@/pages/ChannelPlaceholder";
-import SystemPlaceholder from "@/pages/SystemPlaceholder";
+import Settings from "@/pages/Settings";
 
 function AppRouter() {
   return (
@@ -25,7 +25,7 @@ function AppRouter() {
           {(params) => <ChannelPlaceholder channel={params.channel} />}
         </Route>
 
-        <Route path="/system/settings" component={SystemPlaceholder} />
+        <Route path="/system/settings" component={Settings} />
 
         <Route>
           <Redirect to="/overview/dashboard" />
