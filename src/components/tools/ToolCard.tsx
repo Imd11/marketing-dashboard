@@ -88,15 +88,15 @@ export default function ToolCard({
               <div className='text-[12px] font-medium text-foreground/80'>
                 Raw Thoughts
               </div>
-              <Textarea
-                value={rawThoughts}
-                onChange={(e) => setRawThoughts(e.target.value)}
-                placeholder='把原始想法丢进来：卖点、受众、场景、语气、你想强调的点…'
-                disabled={loading}
-                className={
-                  'min-h-[120px] resize-y bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25'
-                }
-              />
+              <div className='h-[120px] overflow-y-auto rounded-md border border-gray-200 bg-transparent'>
+                <Textarea
+                  value={rawThoughts}
+                  onChange={(e) => setRawThoughts(e.target.value)}
+                  placeholder='把原始想法丢进来：卖点、受众、场景、语气、你想强调的点…'
+                  disabled={loading}
+                  className='h-full bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25 resize-none'
+                />
+              </div>
             </div>
 
             <div className='pt-1 flex gap-2'>

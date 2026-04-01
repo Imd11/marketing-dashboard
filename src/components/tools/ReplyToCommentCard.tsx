@@ -101,28 +101,30 @@ export default function ReplyToCommentCard({
               <div className='text-[12px] font-medium text-foreground/80'>
                 原帖内容
               </div>
-              <Textarea
-                value={originalPost}
-                onChange={(e) => setOriginalPost(e.target.value)}
-                placeholder='粘贴你的原帖内容...'
-                rows={4}
-                disabled={loading}
-                className='min-h-[100px] resize-y bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25'
-              />
+              <div className='h-[100px] overflow-y-auto rounded-md border border-gray-200 bg-transparent'>
+                <Textarea
+                  value={originalPost}
+                  onChange={(e) => setOriginalPost(e.target.value)}
+                  placeholder='粘贴你的原帖内容...'
+                  disabled={loading}
+                  className='h-full bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25 resize-none'
+                />
+              </div>
             </div>
 
             <div className='space-y-2'>
               <div className='text-[12px] font-medium text-foreground/80'>
                 网友评论
               </div>
-              <Textarea
-                value={userComment}
-                onChange={(e) => setUserComment(e.target.value)}
-                placeholder='粘贴网友的评论...'
-                rows={4}
-                disabled={loading}
-                className='min-h-[100px] resize-y bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25'
-              />
+              <div className='h-[100px] overflow-y-auto rounded-md border border-gray-200 bg-transparent'>
+                <Textarea
+                  value={userComment}
+                  onChange={(e) => setUserComment(e.target.value)}
+                  placeholder='粘贴网友的评论...'
+                  disabled={loading}
+                  className='h-full bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25 resize-none'
+                />
+              </div>
             </div>
 
             {/* Length Options - Row 1 */}
