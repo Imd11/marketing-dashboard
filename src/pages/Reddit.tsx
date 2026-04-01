@@ -7,6 +7,7 @@ import {
   SMART_REPLIER_SYSTEM,
   HELP_POST_SYSTEM,
   DM_PROMOTION_SYSTEM,
+  PROMOTION_POST_SYSTEM,
 } from '@/prompts/reddit';
 
 type ToolDef = {
@@ -47,6 +48,13 @@ export default function Reddit() {
         shortName: '📨 Reddit私信DM推广',
         description: '撰写看起来不像广告的 Reddit 私信，获取真实用户反馈。',
         systemPrompt: DM_PROMOTION_SYSTEM,
+      },
+      {
+        id: 'reddit-promotion-post',
+        title: '🚀 Reddit推广贴',
+        shortName: '🚀 Reddit推广贴',
+        description: '将 PRD 转化为极具传播力的"个人极客故事"风格的 Reddit 推广贴。',
+        systemPrompt: PROMOTION_POST_SYSTEM,
       },
     ],
     []
