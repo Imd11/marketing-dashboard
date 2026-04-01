@@ -41,10 +41,19 @@ export default function ReplyToCommentCard({
 
   async function onGenerate() {
     if (!canGenerate) return;
+
+    // 替换 System Prompt 中的占位符
+    const resolvedPrompt = systemPrompt
+      .replace(/\{\{社区名字\}\}/g, communityName || '未提供')
+      .replace(/\{\{原帖内容\}\}/g, originalPost || '未提供')
+      .replace(/\{\{网友评论\}\}/g, userComment || '未提供')
+      .replace(/\{\{语气标签\}\}/g, selectedTones.join('、') || '无')
+      .replace(/\{\{回复长度\}\}/g, lengthOptions.find((l) => l.value === length)?.label || '中');
+
     await generate({
-      systemPrompt,
+      systemPrompt: resolvedPrompt,
       productName: communityName,
-      rawThoughts: `社区名字: ${communityName}\n\n原帖内容:\n${originalPost}\n\n网友评论:\n${userComment}\n\n语气标签: ${selectedTones.join('、') || '无'}\n回复长度: ${lengthOptions.find((l) => l.value === length)?.label}`,
+      rawThoughts: '',
     });
     toast.success('已生成', { description: '你可以一键复制到剪贴板' });
   }
