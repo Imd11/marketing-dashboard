@@ -7,6 +7,19 @@ import { toast } from 'sonner';
 import { Loader2, Copy, X } from 'lucide-react';
 import { Streamdown } from 'streamdown';
 import { useGenerate } from '@/hooks/useGenerate';
+import { cn } from '@/lib/utils';
+
+const toneOptions = [
+  { value: 'friendly', label: '友好' },
+  { value: 'casual', label: '随意' },
+  { value: 'formal', label: '正式' },
+];
+
+const lengthOptions = [
+  { value: 'short', label: '短' },
+  { value: 'medium', label: '中' },
+  { value: 'long', label: '长' },
+];
 
 export default function ReplyToCommentCard({
   title,
@@ -20,6 +33,8 @@ export default function ReplyToCommentCard({
   const [communityName, setCommunityName] = useState('');
   const [originalPost, setOriginalPost] = useState('');
   const [userComment, setUserComment] = useState('');
+  const [tone, setTone] = useState('friendly');
+  const [length, setLength] = useState('medium');
   const { output, loading, generate, cancel } = useGenerate();
 
   const canGenerate =
@@ -30,11 +45,10 @@ export default function ReplyToCommentCard({
 
   async function onGenerate() {
     if (!canGenerate) return;
-    const fullInput = `社区名字: ${communityName}\n\n原帖内容:\n${originalPost}\n\n网友评论:\n${userComment}`;
     await generate({
       systemPrompt,
       productName: communityName,
-      rawThoughts: `原帖内容:\n${originalPost}\n\n网友评论:\n${userComment}`,
+      rawThoughts: `社区名字: ${communityName}\n\n原帖内容:\n${originalPost}\n\n网友评论:\n${userComment}\n\n语气风格: ${toneOptions.find((t) => t.value === tone)?.label}\n回复长度: ${lengthOptions.find((l) => l.value === length)?.label}`,
     });
     toast.success('已生成', { description: '你可以一键复制到剪贴板' });
   }
@@ -104,6 +118,52 @@ export default function ReplyToCommentCard({
                 disabled={loading}
                 className='min-h-[100px] resize-y bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25'
               />
+            </div>
+
+            {/* Tone & Length Options */}
+            <div className='flex gap-4'>
+              <div className='flex items-center gap-2'>
+                <span className='text-[12px] text-muted-foreground'>语气:</span>
+                <div className='flex gap-1'>
+                  {toneOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type='button'
+                      onClick={() => setTone(option.value)}
+                      disabled={loading}
+                      className={cn(
+                        'px-3 py-1 text-xs rounded-full border transition-colors',
+                        tone === option.value
+                          ? 'bg-gray-900 text-white border-gray-900'
+                          : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className='flex items-center gap-2'>
+                <span className='text-[12px] text-muted-foreground'>长短:</span>
+                <div className='flex gap-1'>
+                  {lengthOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type='button'
+                      onClick={() => setLength(option.value)}
+                      disabled={loading}
+                      className={cn(
+                        'px-3 py-1 text-xs rounded-full border transition-colors',
+                        length === option.value
+                          ? 'bg-gray-900 text-white border-gray-900'
+                          : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className='pt-1 flex gap-2'>
