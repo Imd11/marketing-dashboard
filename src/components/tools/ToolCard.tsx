@@ -3,7 +3,6 @@
 // - 内部 50/50 分栏，Input 左、Output 右
 // - 输入框透明底 + 浅边框，Focus 只略微加深
 
-import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +11,7 @@ import { toast } from 'sonner';
 import { Loader2, Copy, X } from 'lucide-react';
 import { Streamdown } from 'streamdown';
 import { useGenerate } from '@/hooks/useGenerate';
+import { useToolStorage } from '@/hooks/useToolStorage';
 
 export type ToolCardInput = {
   productName: string;
@@ -31,15 +31,27 @@ export default function ToolCard({
   description: string;
   systemPrompt: SystemPrompt;
 }) {
-  const [productName, setProductName] = useState('');
-  const [rawThoughts, setRawThoughts] = useState('');
-  const { output, loading, generate, cancel } = useGenerate();
+  const { productName, rawThoughts, output, setField, setOutput } =
+    useToolStorage(toolId, ['productName', 'rawThoughts']);
+  const { loading, generate, cancel } = useGenerate();
+
+  const setProductName = (value: string) => setField('productName', value);
+  const setRawThoughts = (value: string) => setField('rawThoughts', value);
 
   const canGenerate = !loading && (productName.trim().length > 0 || rawThoughts.trim().length > 0);
 
   async function onGenerate() {
     if (!canGenerate) return;
-    await generate({ systemPrompt, productName, rawThoughts });
+
+    // Capture output for storage
+    let fullOutput = '';
+    await generate(
+      { systemPrompt, productName, rawThoughts },
+      (chunk) => {
+        fullOutput += chunk;
+        setOutput(fullOutput);
+      }
+    );
     toast.success('已生成', { description: '你可以一键复制到剪贴板' });
   }
 

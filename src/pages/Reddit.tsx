@@ -112,6 +112,7 @@ export default function Reddit() {
           {activeTool ? (
             activeTool.has3Inputs ? (
               <ReplyToCommentCard
+                toolId={activeTool.id}
                 title={activeTool.title}
                 description={activeTool.description}
                 systemPrompt={activeTool.systemPrompt}

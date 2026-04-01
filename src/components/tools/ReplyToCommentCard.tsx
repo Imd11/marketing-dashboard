@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +6,7 @@ import { toast } from 'sonner';
 import { Loader2, Copy, X } from 'lucide-react';
 import { Streamdown } from 'streamdown';
 import { useGenerate } from '@/hooks/useGenerate';
+import { useToolStorage } from '@/hooks/useToolStorage';
 import { cn } from '@/lib/utils';
 
 const toneTags = ['感谢', '思考', '洞察', '共鸣', '提问'] as const;
@@ -18,20 +18,41 @@ const lengthOptions = [
 ];
 
 export default function ReplyToCommentCard({
+  toolId,
   title,
   description,
   systemPrompt,
 }: {
+  toolId: string;
   title: string;
   description: string;
   systemPrompt: string;
 }) {
-  const [communityName, setCommunityName] = useState('');
-  const [originalPost, setOriginalPost] = useState('');
-  const [userComment, setUserComment] = useState('');
-  const [selectedTones, setSelectedTones] = useState<string[]>([]);
-  const [length, setLength] = useState('medium');
-  const { output, loading, generate, cancel } = useGenerate();
+  const {
+    communityName,
+    originalPost,
+    userComment,
+    selectedTones: selectedTonesStr,
+    length,
+    output,
+    setField,
+    setOutput,
+  } = useToolStorage(toolId, ['communityName', 'originalPost', 'userComment', 'selectedTones', 'length']);
+  const { loading, generate, cancel } = useGenerate();
+
+  const selectedTones = selectedTonesStr ? selectedTonesStr.split(',').filter(Boolean) : [];
+  const setSelectedTones = (tones: string[] | ((prev: string[]) => string[])) => {
+    if (typeof tones === 'function') {
+      const newTones = tones(selectedTones);
+      setField('selectedTones', newTones.join(','));
+    } else {
+      setField('selectedTones', tones.join(','));
+    }
+  };
+  const setLength = (len: string) => setField('length', len);
+  const setCommunityName = (value: string) => setField('communityName', value);
+  const setOriginalPost = (value: string) => setField('originalPost', value);
+  const setUserComment = (value: string) => setField('userComment', value);
 
   const canGenerate =
     !loading &&
@@ -50,11 +71,18 @@ export default function ReplyToCommentCard({
       .replace(/\{\{语气标签\}\}/g, selectedTones.join('、') || '无')
       .replace(/\{\{回复长度\}\}/g, lengthOptions.find((l) => l.value === length)?.label || '中');
 
-    await generate({
-      systemPrompt: resolvedPrompt,
-      productName: communityName,
-      rawThoughts: '',
-    });
+    let fullOutput = '';
+    await generate(
+      {
+        systemPrompt: resolvedPrompt,
+        productName: communityName,
+        rawThoughts: '',
+      },
+      (chunk) => {
+        fullOutput += chunk;
+        setOutput(fullOutput);
+      }
+    );
     toast.success('已生成', { description: '你可以一键复制到剪贴板' });
   }
 
