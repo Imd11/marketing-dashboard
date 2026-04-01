@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import AppShell from '@/components/shell/AppShell';
 import ToolCard from '@/components/tools/ToolCard';
+import ReplyToCommentCard from '@/components/tools/ReplyToCommentCard';
 import { cn } from '@/lib/utils';
 import {
   POST_REFINDER_SYSTEM,
@@ -8,6 +9,7 @@ import {
   HELP_POST_SYSTEM,
   DM_PROMOTION_SYSTEM,
   PROMOTION_POST_SYSTEM,
+  REPLY_TO_COMMENT_SYSTEM,
 } from '@/prompts/reddit';
 
 type ToolDef = {
@@ -16,6 +18,7 @@ type ToolDef = {
   shortName: string;
   description: string;
   systemPrompt: string;
+  has3Inputs?: boolean;
 };
 
 export default function Reddit() {
@@ -55,6 +58,14 @@ export default function Reddit() {
         shortName: '🚀 Reddit推广贴',
         description: '将 PRD 转化为极具传播力的"个人极客故事"风格的 Reddit 推广贴。',
         systemPrompt: PROMOTION_POST_SYSTEM,
+      },
+      {
+        id: 'reddit-reply-to-comment',
+        title: '💭 再回复',
+        shortName: '💭 再回复',
+        description: '基于原帖内容和网友评论，生成自然的回复。',
+        systemPrompt: REPLY_TO_COMMENT_SYSTEM,
+        has3Inputs: true,
       },
     ],
     []
@@ -99,12 +110,20 @@ export default function Reddit() {
         {/* Right: Active Tool Workspace (75%~80%) */}
         <div className='mt-4 md:mt-0 md:border-l md:border-black/20 md:pl-6 self-stretch'>
           {activeTool ? (
-            <ToolCard
-              toolId={activeTool.id}
-              title={activeTool.title}
-              description={activeTool.description}
-              systemPrompt={activeTool.systemPrompt}
-            />
+            activeTool.has3Inputs ? (
+              <ReplyToCommentCard
+                title={activeTool.title}
+                description={activeTool.description}
+                systemPrompt={activeTool.systemPrompt}
+              />
+            ) : (
+              <ToolCard
+                toolId={activeTool.id}
+                title={activeTool.title}
+                description={activeTool.description}
+                systemPrompt={activeTool.systemPrompt}
+              />
+            )
           ) : null}
         </div>
       </div>
