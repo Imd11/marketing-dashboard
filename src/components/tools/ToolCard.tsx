@@ -142,7 +142,7 @@ export default function ToolCard({
 
           <div className='rounded-md border border-black/20 bg-muted/30 p-4 h-[500px] overflow-y-auto'>
             {output ? (
-              <div className='prose prose-sm max-w-none prose-headings:tracking-tight prose-p:leading-relaxed'>
+              <div className='prose prose-xs max-w-none prose-headings:tracking-tight prose-p:leading-relaxed'>
                 <Streamdown>{output}</Streamdown>
               </div>
             ) : (
