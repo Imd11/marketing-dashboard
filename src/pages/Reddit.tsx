@@ -109,23 +109,28 @@ export default function Reddit() {
 
         {/* Right: Active Tool Workspace (75%~80%) */}
         <div className='mt-4 md:mt-0 md:border-l md:border-black/20 md:pl-6 self-stretch'>
-          {activeTool ? (
-            activeTool.has3Inputs ? (
-              <ReplyToCommentCard
-                toolId={activeTool.id}
-                title={activeTool.title}
-                description={activeTool.description}
-                systemPrompt={activeTool.systemPrompt}
-              />
-            ) : (
-              <ToolCard
-                toolId={activeTool.id}
-                title={activeTool.title}
-                description={activeTool.description}
-                systemPrompt={activeTool.systemPrompt}
-              />
-            )
-          ) : null}
+          {tools.map((tool) => {
+            const isActive = tool.id === activeToolId;
+            return (
+              <div key={tool.id} className={cn(!isActive && 'hidden')}>
+                {tool.has3Inputs ? (
+                  <ReplyToCommentCard
+                    toolId={tool.id}
+                    title={tool.title}
+                    description={tool.description}
+                    systemPrompt={tool.systemPrompt}
+                  />
+                ) : (
+                  <ToolCard
+                    toolId={tool.id}
+                    title={tool.title}
+                    description={tool.description}
+                    systemPrompt={tool.systemPrompt}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </AppShell>
