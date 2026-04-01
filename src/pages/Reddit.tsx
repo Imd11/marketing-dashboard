@@ -6,6 +6,7 @@ import {
   POST_REFINDER_SYSTEM,
   SMART_REPLIER_SYSTEM,
   HELP_POST_SYSTEM,
+  DM_PROMOTION_SYSTEM,
 } from '@/prompts/reddit';
 
 type ToolDef = {
@@ -39,6 +40,13 @@ export default function Reddit() {
         shortName: '❓ Reddit求助帖',
         description: '把你的中文问题改写成适合发布在 Reddit 的英文提问贴。',
         systemPrompt: HELP_POST_SYSTEM,
+      },
+      {
+        id: 'reddit-dm-promotion',
+        title: '📨 Reddit私信DM推广',
+        shortName: '📨 Reddit私信DM推广',
+        description: '撰写看起来不像广告的 Reddit 私信，获取真实用户反馈。',
+        systemPrompt: DM_PROMOTION_SYSTEM,
       },
     ],
     []
