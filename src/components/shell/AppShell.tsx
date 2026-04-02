@@ -22,8 +22,8 @@ export default function AppShell({
         </aside>
 
         <main className="flex-1">
-          <div className="flex min-h-screen w-full flex-col px-6 py-8 md:pl-8">
-            <header className="mb-8">
+          <div className="w-full pl-px pr-6 py-8 flex min-h-screen flex-col">
+            <header className="mb-8 pl-4 md:pl-6">
               <div className="text-[13px] text-muted-foreground">Marketing Growth Dashboard</div>
               <div className="mt-1 flex items-baseline gap-3">
                 <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
