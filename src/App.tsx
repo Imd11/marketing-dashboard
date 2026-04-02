@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 
 import Overview from "@/pages/Overview";
 import Reddit from "@/pages/Reddit";
+import Twitter from "@/pages/Twitter";
 import ChannelPlaceholder from "@/pages/ChannelPlaceholder";
 
 function AppRouter() {
@@ -20,6 +21,7 @@ function AppRouter() {
         <Route path="/overview/dashboard" component={Overview} />
 
         <Route path="/channels/reddit" component={Reddit} />
+        <Route path="/channels/twitter" component={Twitter} />
         <Route path="/channels/:channel">
           {(params) => <ChannelPlaceholder channel={params.channel} />}
         </Route>
