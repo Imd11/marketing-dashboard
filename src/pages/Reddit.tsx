@@ -4,8 +4,6 @@ import ToolCard from '@/components/tools/ToolCard';
 import ReplyToCommentCard from '@/components/tools/ReplyToCommentCard';
 import { cn } from '@/lib/utils';
 import {
-  POST_REFINDER_SYSTEM,
-  SMART_REPLIER_SYSTEM,
   HELP_POST_SYSTEM,
   DM_PROMOTION_SYSTEM,
   PROMOTION_POST_SYSTEM,
@@ -24,20 +22,6 @@ type ToolDef = {
 export default function Reddit() {
   const tools: ToolDef[] = useMemo(
     () => [
-      {
-        id: 'reddit-post-refiner',
-        title: '✨ 帖子神策手 (Post Refiner)',
-        shortName: '✨ 帖子神策手',
-        description: '把你的原始想法重写成可直接发布的 Reddit 帖子结构。',
-        systemPrompt: POST_REFINDER_SYSTEM,
-      },
-      {
-        id: 'reddit-smart-replier',
-        title: '💬 神回复生成器 (Smart Replier)',
-        shortName: '💬 神回复生成器',
-        description: '生成 3 组"像真人"的回复候选，适合评论区互动。',
-        systemPrompt: SMART_REPLIER_SYSTEM,
-      },
       {
         id: 'reddit-help-post',
         title: '❓ Reddit求助帖',

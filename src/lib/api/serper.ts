@@ -30,7 +30,7 @@ export async function searchTwitter(
     timeFilter?: string;
   } = {},
 ): Promise<SerperResult[]> {
-  if (!SERPER_API_KEY || SERPER_API_KEY === 'your-serper-api-key') {
+  if (!SERPER_API_KEY) {
     throw new Error('Serper API key not configured');
   }
 
