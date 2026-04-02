@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { PROVIDERS, type ApiProvider } from '@/lib/api/config';
 import { useApiProviderStore } from '@/lib/api/useApiProviderStore';
+import { Check } from 'lucide-react';
 
 export default function Settings() {
   const { provider, setProvider } = useApiProviderStore();
@@ -18,7 +19,7 @@ export default function Settings() {
               选择全局使用的 LLM API 提供商
             </div>
 
-            <div className='mt-4 space-y-3'>
+            <div className='mt-4 space-y-3 max-w-md'>
               {(Object.keys(PROVIDERS) as ApiProvider[]).map((key) => {
                 const config = PROVIDERS[key];
                 const selected = provider === key;
@@ -46,15 +47,13 @@ export default function Settings() {
                       </div>
                       <div
                         className={cn(
-                          'h-4 w-4 rounded-full border-2 transition-colors',
+                          'h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors',
                           selected
-                            ? 'border-gray-900 bg-gray-900'
-                            : 'border-gray-300'
+                            ? 'border-gray-900 bg-gray-900 text-white'
+                            : 'border-gray-300 bg-white'
                         )}
                       >
-                        {selected && (
-                          <div className='h-full w-full rounded-full bg-white' />
-                        )}
+                        {selected && <Check className='h-3 w-3' strokeWidth={3} />}
                       </div>
                     </div>
                   </button>
