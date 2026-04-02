@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 const STORAGE_KEY_PREFIX = 'tool-storage-';
 const EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
@@ -9,6 +9,11 @@ interface ToolStorage {
   timestamp: number;
 }
 
+interface LoadedToolStorage {
+  fields: Record<string, string>;
+  output: string;
+}
+
 function getStorageKey(toolId: string): string {
   return `${STORAGE_KEY_PREFIX}${toolId}`;
 }
@@ -17,48 +22,52 @@ function isExpired(data: ToolStorage): boolean {
   return Date.now() - data.timestamp > EXPIRY_MS;
 }
 
+function loadStoredData<T extends string>(
+  toolId: string,
+  fieldNames: readonly T[],
+  fallbackFields: Record<string, string>
+): LoadedToolStorage {
+  const key = getStorageKey(toolId);
+  const stored = localStorage.getItem(key);
+
+  if (!stored) {
+    return { fields: fallbackFields, output: '' };
+  }
+
+  try {
+    const data: ToolStorage = JSON.parse(stored);
+    if (isExpired(data)) {
+      localStorage.removeItem(key);
+      return { fields: fallbackFields, output: '' };
+    }
+
+    const loadedFields = fieldNames.reduce<Record<string, string>>((acc, name) => {
+      acc[name] = data.fields?.[name] || '';
+      return acc;
+    }, {});
+
+    return {
+      fields: loadedFields,
+      output: data.output || '',
+    };
+  } catch {
+    localStorage.removeItem(key);
+    return { fields: fallbackFields, output: '' };
+  }
+}
+
 export function useToolStorage<T extends string>(
   toolId: string,
   fieldNames: readonly T[]
 ): Record<T, string> & { output: string; setField: (name: T, value: string) => void; setOutput: (value: string) => void } {
-  // Initialize state for each field
-  const initialState: Record<string, string> = {};
-  fieldNames.forEach((name) => {
-    initialState[name] = '';
-  });
+  const initialState = useMemo(
+    () => fieldNames.reduce<Record<string, string>>((acc, name) => {
+      acc[name] = '';
+      return acc;
+    }, {}),
+    [fieldNames]
+  );
 
-  const [fields, setFieldsState] = useState<Record<string, string>>(initialState);
-  const [output, setOutputState] = useState('');
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const key = getStorageKey(toolId);
-    const stored = localStorage.getItem(key);
-
-    if (stored) {
-      try {
-        const data: ToolStorage = JSON.parse(stored);
-        if (!isExpired(data)) {
-          const loadedFields: Record<string, string> = {};
-          fieldNames.forEach((name) => {
-            loadedFields[name] = data.fields?.[name] || '';
-          });
-          setFieldsState(loadedFields);
-          setOutputState(data.output || '');
-          // Reset timestamp to now (extend expiry)
-          saveToStorage(loadedFields, data.output || '');
-        } else {
-          // Expired, clear storage
-          localStorage.removeItem(key);
-        }
-      } catch {
-        localStorage.removeItem(key);
-      }
-    }
-  }, [toolId, fieldNames]);
-
-  // Save to localStorage
   const saveToStorage = useCallback(
     (newFields: Record<string, string>, newOutput: string) => {
       const key = getStorageKey(toolId);
@@ -71,6 +80,11 @@ export function useToolStorage<T extends string>(
     },
     [toolId]
   );
+
+  const [storedState] = useState(() => loadStoredData(toolId, fieldNames, initialState));
+  const [fields, setFieldsState] = useState<Record<string, string>>(storedState.fields);
+  const [output, setOutputState] = useState(storedState.output);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Clear existing timer
   useEffect(() => {
@@ -95,7 +109,7 @@ export function useToolStorage<T extends string>(
       setFieldsState(initialState);
       setOutputState('');
     }, EXPIRY_MS);
-  }, [toolId]);
+  }, [initialState, toolId]);
 
   const setField = useCallback(
     (name: string, value: string) => {
@@ -106,7 +120,7 @@ export function useToolStorage<T extends string>(
       });
       resetExpiryTimer();
     },
-    [toolId, output, saveToStorage, resetExpiryTimer]
+    [output, resetExpiryTimer, saveToStorage]
   );
 
   const setOutput = useCallback(
@@ -114,7 +128,7 @@ export function useToolStorage<T extends string>(
       setOutputState(value);
       saveToStorage(fields, value);
     },
-    [toolId, fields, saveToStorage]
+    [fields, saveToStorage]
   );
 
   // Build return object with individual getters

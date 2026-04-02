@@ -1,42 +1,8 @@
 import * as React from "react"
-import type { ChangeEvent, CompositionEvent } from "react"
 
 import { cn } from "@/lib/utils"
 
-function Input({ className, type, onChange, ...props }: React.ComponentProps<"input">) {
-  const [isComposing, setIsComposing] = React.useState(false)
-
-  const handleChange = React.useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      // Only propagate change when not in IME composition mode
-      if (!isComposing && onChange) {
-        onChange(e)
-      }
-    },
-    [isComposing, onChange]
-  )
-
-  const handleCompositionEnd = React.useCallback(
-    (e: CompositionEvent<HTMLInputElement>) => {
-      setIsComposing(false)
-      // After composition ends, trigger onChange with the final composed value
-      if (onChange) {
-        const target = e.currentTarget as HTMLInputElement
-        const event = Object.assign(
-          Object.create(Object.getPrototypeOf(e)),
-          {
-            target,
-            currentTarget: target,
-            nativeEvent: e.nativeEvent,
-            type: 'change',
-          }
-        )
-        onChange(event as ChangeEvent<HTMLInputElement>)
-      }
-    },
-    [onChange]
-  )
-
+function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input
       type={type}
@@ -47,9 +13,6 @@ function Input({ className, type, onChange, ...props }: React.ComponentProps<"in
         "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
         className
       )}
-      onChange={handleChange}
-      onCompositionStart={() => setIsComposing(true)}
-      onCompositionEnd={handleCompositionEnd}
       {...props}
     />
   )

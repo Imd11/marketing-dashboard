@@ -72,7 +72,6 @@ export default function Reddit() {
   );
 
   const [activeToolId, setActiveToolId] = useState<string>(tools[0]?.id);
-  const activeTool = tools.find((t) => t.id === activeToolId) ?? tools[0];
 
   return (
     <AppShell title='营销阵地' subtitle='Reddit'>
