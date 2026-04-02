@@ -8,25 +8,44 @@ import { Loader2, Search, ExternalLink, Copy, MessageSquare } from 'lucide-react
 import { Streamdown } from 'streamdown';
 import { searchTwitter, type SerperResult } from '@/lib/api/serper';
 import { useGenerate } from '@/hooks/useGenerate';
+import { TWITTER_DISCUSSION_SYSTEM } from '@/prompts/twitter';
+import { cn } from '@/lib/utils';
+
+const toneTags = ['感谢', '思考', '洞察', '共鸣', '提问'] as const;
+const lengthOptions = [
+  { value: 'short', label: '短' },
+  { value: 'medium', label: '中' },
+  { value: 'long', label: '长' },
+];
 
 interface TweetCardProps {
   tweet: SerperResult;
+  productUrl: string;
   productInfo: string;
-  onGenerateComment: (tweet: SerperResult) => void;
+  onGenerateComment: (tweet: SerperResult, tone: string, length: string) => void;
   generatingComment: boolean;
   generatedComment: string;
   onCopyComment: () => void;
-  loading: boolean;
+  selectedTone: string;
+  selectedLength: string;
+  onToneChange: (tone: string) => void;
+  onLengthChange: (length: string) => void;
+  disabled: boolean;
 }
 
 function TweetCard({
   tweet,
+  productUrl,
   productInfo,
   onGenerateComment,
   generatingComment,
   generatedComment,
   onCopyComment,
-  loading,
+  selectedTone,
+  selectedLength,
+  onToneChange,
+  onLengthChange,
+  disabled,
 }: TweetCardProps) {
   return (
     <div className="border border-border/60 rounded-lg p-4 space-y-3">
@@ -47,27 +66,77 @@ function TweetCard({
       </div>
 
       {!generatedComment ? (
-        <Button
-          onClick={() => onGenerateComment(tweet)}
-          disabled={generatingComment || !productInfo.trim()}
-          size="sm"
-          className="w-full gap-1.5"
-        >
-          {generatingComment ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              生成中…
-            </>
-          ) : (
-            <>
-              <MessageSquare className="h-4 w-4" />
-              生成评论
-            </>
-          )}
-        </Button>
+        <>
+          {/* 语气和长度选项 */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] text-muted-foreground">语气:</span>
+              <div className="flex gap-1 flex-wrap">
+                {toneTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => onToneChange(tag)}
+                    disabled={disabled}
+                    className={cn(
+                      'px-2 py-0.5 text-[11px] rounded-full border transition-colors',
+                      selectedTone === tag
+                        ? 'bg-gray-900 text-white border-gray-900'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                    )}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-muted-foreground">长短:</span>
+              <div className="flex gap-1">
+                {lengthOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => onLengthChange(option.value)}
+                    disabled={disabled}
+                    className={cn(
+                      'px-2 py-0.5 text-[11px] rounded-full border transition-colors',
+                      selectedLength === option.value
+                        ? 'bg-gray-900 text-white border-gray-900'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => onGenerateComment(tweet, selectedTone, selectedLength)}
+            disabled={generatingComment || !productInfo.trim()}
+            size="sm"
+            className="w-full gap-1.5"
+          >
+            {generatingComment ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                生成中…
+              </>
+            ) : (
+              <>
+                <MessageSquare className="h-4 w-4" />
+                生成讨论回复
+              </>
+            )}
+          </Button>
+        </>
       ) : (
         <div className="space-y-2">
-          <div className="rounded-md bg-muted/50 p-3 text-sm">{generatedComment}</div>
+          <div className="rounded-md bg-muted/50 p-3 text-sm max-h-[200px] overflow-y-auto">
+            <Streamdown>{generatedComment}</Streamdown>
+          </div>
           <div className="flex gap-2">
             <Button onClick={onCopyComment} size="sm" variant="outline" className="flex-1 gap-1.5">
               <Copy className="h-3.5 w-3.5" />
@@ -92,17 +161,25 @@ function TweetCard({
 }
 
 export default function SearchTweetsCard() {
-  const [query, setQuery] = useState('');
+  const [productUrl, setProductUrl] = useState('');
   const [productInfo, setProductInfo] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SerperResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [selectedTweet, setSelectedTweet] = useState<SerperResult | null>(null);
   const [generatedComment, setGeneratedComment] = useState('');
   const [generatingComment, setGeneratingComment] = useState(false);
-  const { generate, cancel, loading } = useGenerate();
+  const { generate, cancel } = useGenerate();
+
+  // 每个推文的语气和长度选项
+  const [tweetTones, setTweetTones] = useState<Record<string, string>>({});
+  const [tweetLengths, setTweetLengths] = useState<Record<string, string>>({});
+
+  const getTweetTone = (link: string) => tweetTones[link] || '共鸣';
+  const getTweetLength = (link: string) => tweetLengths[link] || 'medium';
 
   async function onSearch() {
-    if (!query.trim()) {
+    if (!searchQuery.trim()) {
       toast.error('请输入搜索关键词');
       return;
     }
@@ -111,9 +188,11 @@ export default function SearchTweetsCard() {
     setSearchResults([]);
     setSelectedTweet(null);
     setGeneratedComment('');
+    setTweetTones({});
+    setTweetLengths({});
 
     try {
-      const results = await searchTwitter(query, { num: 10 });
+      const results = await searchTwitter(searchQuery, { num: 10 });
       setSearchResults(results);
       if (results.length === 0) {
         toast.info('没有找到相关推文，尝试其他关键词');
@@ -126,7 +205,7 @@ export default function SearchTweetsCard() {
     }
   }
 
-  async function onGenerateComment(tweet: SerperResult) {
+  async function onGenerateComment(tweet: SerperResult, tone: string, length: string) {
     if (!productInfo.trim()) {
       toast.error('请输入产品介绍');
       return;
@@ -135,25 +214,17 @@ export default function SearchTweetsCard() {
     setSelectedTweet(tweet);
     setGeneratingComment(true);
 
-    const systemPrompt = `You are a Twitter marketing expert. Generate a natural, non-promotional comment for a tweet, promoting a product without sounding like an ad.
-
-Product Info: ${productInfo}
-
-Tweet Content: ${tweet.title} - ${tweet.snippet}
-
-Requirements:
-- Sound like a genuine, helpful response from a real person
-- Naturally mention the product without hard selling
-- Keep it concise (under 280 characters)
-- Don't start with "As a..." or similar generic intros
-- Focus on value-add, not product push
-
-Generate one comment in English:`;
+    const resolvedPrompt = TWITTER_DISCUSSION_SYSTEM
+      .replace(/\{\{产品网址\}\}/g, productUrl || '未提供')
+      .replace(/\{\{产品介绍\}\}/g, productInfo)
+      .replace(/\{\{帖子内容\}\}/g, `${tweet.title} - ${tweet.snippet}`)
+      .replace(/\{\{语气标签\}\}/g, tone)
+      .replace(/\{\{回复长度\}\}/g, lengthOptions.find((l) => l.value === length)?.label || '中');
 
     try {
       let fullOutput = '';
       await generate(
-        { systemPrompt, productName: '', rawThoughts: '' },
+        { systemPrompt: resolvedPrompt, productName: '', rawThoughts: '' },
         (chunk) => {
           fullOutput += chunk;
           setGeneratedComment(fullOutput);
@@ -178,7 +249,7 @@ Generate one comment in English:`;
     }
   }
 
-  const canSearch = !searching && query.trim().length > 0;
+  const canSearch = !searching && searchQuery.trim().length > 0;
 
   return (
     <Card className="border-border/60 bg-white shadow-none">
@@ -187,21 +258,33 @@ Generate one comment in English:`;
         <div>
           <div className="text-[15px] font-semibold tracking-tight">🔍 搜索推文</div>
           <div className="mt-1 text-sm text-muted-foreground">
-            搜索 Twitter 上相关的讨论，生成推广评论
+            搜索 Twitter 上的相关讨论，生成讨论型回复（市场调研）
           </div>
         </div>
 
         {/* Search Input */}
         <div className="space-y-3">
-          <div className="space-y-2">
-            <div className="text-[12px] font-medium text-foreground/80">产品关键词</div>
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="例如：marketing automation, AI tools"
-              disabled={searching}
-              className="h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <div className="text-[12px] font-medium text-foreground/80">产品网址</div>
+              <Input
+                value={productUrl}
+                onChange={(e) => setProductUrl(e.target.value)}
+                placeholder="https://your-product.com"
+                disabled={searching}
+                className="h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25"
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="text-[12px] font-medium text-foreground/80">搜索关键词</div>
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="例如：marketing automation, AI tools"
+                disabled={searching}
+                className="h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -210,7 +293,7 @@ Generate one comment in English:`;
               <Textarea
                 value={productInfo}
                 onChange={(e) => setProductInfo(e.target.value)}
-                placeholder="输入你的产品名称、功能、卖点，让 AI 生成更精准的评论..."
+                placeholder="输入你的产品名称、功能、卖点，用于生成更精准的讨论回复..."
                 disabled={generatingComment}
                 className="h-full bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25 resize-none"
               />
@@ -247,12 +330,17 @@ Generate one comment in English:`;
                 <TweetCard
                   key={tweet.link}
                   tweet={tweet}
+                  productUrl={productUrl}
                   productInfo={productInfo}
                   onGenerateComment={onGenerateComment}
                   generatingComment={generatingComment && selectedTweet?.link === tweet.link}
                   generatedComment={selectedTweet?.link === tweet.link ? generatedComment : ''}
                   onCopyComment={onCopyComment}
-                  loading={loading}
+                  selectedTone={getTweetTone(tweet.link)}
+                  selectedLength={getTweetLength(tweet.link)}
+                  onToneChange={(tone) => setTweetTones((prev) => ({ ...prev, [tweet.link]: tone }))}
+                  onLengthChange={(length) => setTweetLengths((prev) => ({ ...prev, [tweet.link]: length }))}
+                  disabled={generatingComment}
                 />
               ))}
             </div>
