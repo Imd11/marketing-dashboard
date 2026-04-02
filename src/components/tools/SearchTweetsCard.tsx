@@ -183,116 +183,117 @@ export default function SearchTweetsCard() {
           </div>
         </div>
 
-        {/* Product Info Input */}
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <div className="text-[12px] font-medium text-foreground/80">产品网址</div>
-              <Input
-                value={productUrl}
-                onChange={(e) => setProductUrl(e.target.value)}
-                placeholder="https://your-product.com"
-                disabled={searching || generatingKeywords}
-                className="h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25"
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="text-[12px] font-medium text-foreground/80">产品介绍</div>
-              <Input
-                value={productInfo}
-                onChange={(e) => setProductInfo(e.target.value)}
-                placeholder="产品名称、功能、卖点..."
-                disabled={searching || generatingKeywords}
-                className="h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25"
-              />
-            </div>
-          </div>
-
-          {/* AI 生成关键词按钮 */}
-          <Button
-            onClick={onGenerateKeywords}
-            disabled={!canGenerateKeywords}
-            variant="outline"
-            className="w-full gap-2"
-          >
-            {generatingKeywords ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                AI 生成关键词中…
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4" />
-                AI 生成精准关键词
-              </>
-            )}
-          </Button>
-
-          {/* 生成的关键词展示 */}
-          {generatedKeywords.length > 0 && (
-            <div className="space-y-2">
-              <div className="text-[12px] font-medium text-foreground/80">
-                AI 生成的关键词（点击选择一个）
+        {/* TOP SECTION: Left=产品信息输入 | Right=搜索结果 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* LEFT: 产品信息输入 */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <div className="text-[12px] font-medium text-foreground/80">产品网址</div>
+                <Input
+                  value={productUrl}
+                  onChange={(e) => setProductUrl(e.target.value)}
+                  placeholder="https://your-product.com"
+                  disabled={searching || generatingKeywords}
+                  className="h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25"
+                />
               </div>
-              <div className="flex flex-wrap gap-2">
-                {generatedKeywords.map((keyword, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => toggleKeyword(keyword)}
-                    className={cn(
-                      'px-3 py-1 text-xs rounded-full border transition-colors',
-                      selectedKeywords.includes(keyword)
-                        ? 'bg-primary text-white border-primary'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-primary/50'
-                    )}
-                  >
-                    {keyword}
-                  </button>
-                ))}
+              <div className="space-y-2">
+                <div className="text-[12px] font-medium text-foreground/80">产品介绍</div>
+                <Input
+                  value={productInfo}
+                  onChange={(e) => setProductInfo(e.target.value)}
+                  placeholder="产品名称、功能、卖点..."
+                  disabled={searching || generatingKeywords}
+                  className="h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25"
+                />
               </div>
             </div>
-          )}
 
-          {/* 搜索框和搜索按钮 */}
-          <div className="flex gap-2">
-            <Input
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setSelectedKeywords([]);
-              }}
-              placeholder="或直接输入搜索关键词..."
-              disabled={searching}
-              className="flex-1 h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25"
-            />
+            {/* AI 生成关键词按钮 */}
             <Button
-              onClick={onSearch}
-              disabled={!canSearch}
-              className="gap-2"
+              onClick={onGenerateKeywords}
+              disabled={!canGenerateKeywords}
+              variant="outline"
+              className="w-full gap-2"
             >
-              {searching ? (
+              {generatingKeywords ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  搜索中…
+                  AI 生成关键词中…
                 </>
               ) : (
                 <>
-                  <Search className="h-4 w-4" />
-                  搜索
+                  <Sparkles className="h-4 w-4" />
+                  AI 生成精准关键词
                 </>
               )}
             </Button>
-          </div>
-        </div>
 
-        {/* Search Results - List only */}
-        {searchResults.length > 0 && (
+            {/* 生成的关键词展示 */}
+            {generatedKeywords.length > 0 && (
+              <div className="space-y-2">
+                <div className="text-[12px] font-medium text-foreground/80">
+                  AI 生成的关键词（点击选择一个）
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {generatedKeywords.map((keyword, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => toggleKeyword(keyword)}
+                      className={cn(
+                        'px-3 py-1 text-xs rounded-full border transition-colors',
+                        selectedKeywords.includes(keyword)
+                          ? 'bg-primary text-white border-primary'
+                          : 'bg-white text-gray-600 border-gray-200 hover:border-primary/50'
+                      )}
+                    >
+                      {keyword}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 搜索框和搜索按钮 */}
+            <div className="flex gap-2">
+              <Input
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSelectedKeywords([]);
+                }}
+                placeholder="或直接输入搜索关键词..."
+                disabled={searching}
+                className="flex-1 h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25"
+              />
+              <Button
+                onClick={onSearch}
+                disabled={!canSearch}
+                className="gap-2"
+              >
+                {searching ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    搜索中…
+                  </>
+                ) : (
+                  <>
+                    <Search className="h-4 w-4" />
+                    搜索
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* RIGHT: 搜索结果 */}
           <div className="space-y-2">
             <div className="text-[12px] font-medium text-foreground/80">
-              搜索结果 ({searchResults.length})，点击选择一个帖子
+              搜索结果 {searchResults.length > 0 && `(${searchResults.length})`}，点击选择一个帖子
             </div>
-            <div className="space-y-1 max-h-[200px] overflow-y-auto pr-1">
+            <div className="space-y-1 max-h-[300px] overflow-y-auto pr-1">
               {searchResults.map((tweet) => (
                 <button
                   key={tweet.link}
@@ -321,27 +322,36 @@ export default function SearchTweetsCard() {
                   </div>
                 </button>
               ))}
+              {searchResults.length === 0 && !searching && (
+                <div className="text-center py-8 text-sm text-muted-foreground">
+                  输入产品信息，AI 生成精准关键词，再搜索目标用户讨论
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Master-Detail Layout */}
+        {/* BOTTOM SECTION: Left=帖子操作区 | Right=AI输出区 */}
         {selectedTweet && (
           <div className="border-t border-border pt-6">
             <div className="text-[12px] font-medium text-foreground/80 mb-3">
               生成讨论回复
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left: 操作区 */}
+              {/* LEFT: 帖子操作区 */}
               <div className="space-y-4">
-                {/* 帖子信息 - 标题+摘要 */}
+                {/* 帖子信息 */}
                 <div className="rounded-md border border-gray-200 p-4 space-y-3">
-                  <div className="text-[12px] font-medium text-foreground/80">帖子标题</div>
-                  <p className="text-sm font-medium leading-relaxed">{selectedTweet.title}</p>
-                  <div className="text-[12px] font-medium text-foreground/80">帖子摘要</div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {selectedTweet.snippet || '无摘要'}
-                  </p>
+                  <div className="space-y-1">
+                    <div className="text-[12px] font-medium text-foreground/80">帖子标题</div>
+                    <p className="text-sm font-medium leading-relaxed">{selectedTweet.title}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[12px] font-medium text-foreground/80">帖子摘要</div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {selectedTweet.snippet || '无摘要'}
+                    </p>
+                  </div>
                   <div className="flex items-center justify-between pt-1">
                     <span className="text-xs text-muted-foreground">{selectedTweet.date || '未知日期'}</span>
                     <a
@@ -422,7 +432,7 @@ export default function SearchTweetsCard() {
                 </Button>
               </div>
 
-              {/* Right: 输出区 */}
+              {/* RIGHT: AI 输出区 */}
               <div className="relative">
                 <div className="absolute right-0 top-0 flex gap-2">
                   {generatedComment && (
@@ -445,19 +455,12 @@ export default function SearchTweetsCard() {
                     </div>
                   ) : (
                     <div className="text-muted-foreground text-sm h-full flex items-center justify-center">
-                      {generatingComment ? '生成中…' : '选择帖子并点击生成后，结果将显示在这里'}
+                      {generatingComment ? '生成中…' : '生成后结果将显示在这里'}
                     </div>
                   )}
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {searchResults.length === 0 && !searching && (
-          <div className="text-center py-8 text-sm text-muted-foreground">
-            输入产品信息，AI 生成精准关键词，再搜索目标用户讨论
           </div>
         )}
       </div>
