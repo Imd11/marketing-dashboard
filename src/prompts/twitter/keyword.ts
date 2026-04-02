@@ -12,7 +12,7 @@ export const KEYWORD_GENERATE_SYSTEM = `# Role
 {{产品介绍}}
 
 # Output Requirements
-生成 6-10 个搜索关键词，这些关键词用于找到：
+生成 3-5 个搜索关键词，这些关键词用于找到：
 - 正在讨论相关话题的目标用户
 - 有需求但未解决的用户
 - 寻找替代品的用户
