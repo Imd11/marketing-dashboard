@@ -289,7 +289,7 @@ export default function SearchTweetsCard() {
           </div>
 
           {/* RIGHT: 搜索结果 */}
-          <div className="space-y-2">
+          <div className="space-y-2 md:border-l md:border-black/20 md:pl-6">
             <div className="text-[12px] font-medium text-foreground/80">
               搜索结果 {searchResults.length > 0 && `(${searchResults.length})`}，点击选择一个帖子
             </div>
@@ -433,7 +433,7 @@ export default function SearchTweetsCard() {
               </div>
 
               {/* RIGHT: AI 输出区 */}
-              <div className="relative">
+              <div className="relative md:border-l md:border-black/20 md:pl-6">
                 <div className="absolute right-0 top-0 flex gap-2">
                   {generatedComment && (
                     <Button
