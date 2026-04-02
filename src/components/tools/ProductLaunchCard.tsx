@@ -10,10 +10,10 @@ import { useToolStorage } from '@/hooks/useToolStorage';
 import { cn } from '@/lib/utils';
 
 const toneOptions = [
-  { value: 'excited', label: '兴奋' },
-  { value: 'simple', label: '简约' },
-  { value: 'story', label: '故事型' },
-  { value: 'technical', label: '技术流' },
+  { value: 'excited', label: '兴奋', definition: '使用强烈的感叹词和emoji，开头就抓住注意力，语气充满热情和能量，适合重大发布或里程碑事件' },
+  { value: 'simple', label: '简约', definition: '极简主义风格，言简意赅，没有任何多余的修饰词，直接陈述产品核心价值' },
+  { value: 'story', label: '故事型', definition: '用一个具体的用户场景或日常痛点开头，引发共鸣，然后自然引出产品' },
+  { value: 'technical', label: '技术流', definition: '数据驱动，强调具体的技术指标、性能数字、排名等，适合技术产品或专业工具' },
 ];
 
 const launchTypeOptions = [
@@ -63,10 +63,12 @@ export default function ProductLaunchCard({
   async function onGenerate() {
     if (!canGenerate) return;
 
+    const selectedTone = toneOptions.find((t) => t.value === tone) || toneOptions[0];
+
     const resolvedPrompt = systemPrompt
       .replace(/\{\{productName\}\}/g, productName || '未提供')
       .replace(/\{\{productInfo\}\}/g, productInfo || '未提供')
-      .replace(/\{\{tone\}\}/g, toneOptions.find((t) => t.value === tone)?.label || '兴奋')
+      .replace(/\{\{tone\}\}/g, `${selectedTone.label}：${selectedTone.definition}`)
       .replace(/\{\{launchType\}\}/g, launchTypeOptions.find((l) => l.value === launchType)?.label || '新产品发布')
       .replace(/\{\{length\}\}/g, lengthOptions.find((l) => l.value === length)?.label === '短' ? '100-140' : lengthOptions.find((l) => l.value === length)?.label === '中' ? '150-200' : '250-280');
 
