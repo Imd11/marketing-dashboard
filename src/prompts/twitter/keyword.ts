@@ -5,8 +5,11 @@ export const KEYWORD_GENERATE_SYSTEM = `# Role
 根据我提供的产品信息，生成精准的 Twitter/X 搜索关键词，用于找到目标用户讨论帖。
 
 # Input Parameters
-- 产品网址：{{产品网址}}
-- 产品介绍：{{产品介绍}}
+以下是你抓取到的产品页面内容：
+{{产品网址}}
+
+以下是你提供的产品介绍补充信息：
+{{产品介绍}}
 
 # Output Requirements
 生成 6-10 个搜索关键词，这些关键词用于找到：

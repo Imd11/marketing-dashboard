@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Loader2, Search, ExternalLink, Copy, MessageSquare, Sparkles } from 'lucide-react';
 import { Streamdown } from 'streamdown';
 import { searchTwitter, type SerperResult } from '@/lib/api/serper';
+import { scrapeUrl } from '@/lib/api/jina';
 import { useGenerate } from '@/hooks/useGenerate';
 import { TWITTER_DISCUSSION_SYSTEM, KEYWORD_GENERATE_SYSTEM } from '@/prompts/twitter';
 import { cn } from '@/lib/utils';
@@ -193,8 +194,21 @@ export default function SearchTweetsCard() {
     setGeneratedKeywords([]);
     setSelectedKeywords([]);
 
+    let scrapedContent = '';
+
+    // 如果提供了产品网址，用 Jina Reader 抓取页面内容
+    if (productUrl.trim()) {
+      try {
+        toast.info('正在抓取产品页面...');
+        scrapedContent = await scrapeUrl(productUrl.trim());
+      } catch (error) {
+        console.warn('Jina scrape failed, using URL only:', error);
+        scrapedContent = `产品网址: ${productUrl}`;
+      }
+    }
+
     const resolvedPrompt = KEYWORD_GENERATE_SYSTEM
-      .replace(/\{\{产品网址\}\}/g, productUrl || '未提供')
+      .replace(/\{\{产品网址\}\}/g, scrapedContent || '未提供')
       .replace(/\{\{产品介绍\}\}/g, productInfo);
 
     try {
