@@ -25,5 +25,5 @@ export const PROVIDERS: Record<ApiProvider, ProviderConfig> = {
 export const DEFAULT_PROVIDER: ApiProvider = 'deepseek';
 
 // Serper.dev API for Twitter search
-export const SERPER_API_KEY = 'your-serper-api-key';
+export const SERPER_API_KEY = 'd1aee1ada89c74c593e96b2ec3fe74f734b7363b';
 export const SERPER_SEARCH_URL = 'https://google.serper.dev/search';
