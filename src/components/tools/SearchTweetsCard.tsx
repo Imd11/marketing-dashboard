@@ -12,7 +12,8 @@ import { useGenerate } from '@/hooks/useGenerate';
 import { TWITTER_DISCUSSION_SYSTEM, KEYWORD_GENERATE_SYSTEM } from '@/prompts/twitter';
 import { cn } from '@/lib/utils';
 
-const toneTags = ['感谢', '思考', '洞察', '共鸣', '提问'] as const;
+const toneTags = ['思考', '洞察', '共鸣', '请教'] as const;
+const purposeTags = ['调研', '询问', '讨论', '建议'] as const;
 const lengthOptions = [
   { value: 'short', label: '短' },
   { value: 'medium', label: '中' },
@@ -47,6 +48,7 @@ export default function SearchTweetsCard() {
   // 语气和长度
   const [selectedTone, setSelectedTone] = useState<string>('共鸣');
   const [selectedLength, setSelectedLength] = useState<string>('medium');
+  const [selectedPurpose, setSelectedPurpose] = useState<string>('调研');
 
   async function onGenerateKeywords() {
     if (!productUrl.trim() && !productInfo.trim()) {
@@ -146,7 +148,8 @@ export default function SearchTweetsCard() {
       .replace(/\{\{产品网址\}\}/g, productUrl || '未提供')
       .replace(/\{\{产品介绍\}\}/g, productInfo)
       .replace(/\{\{帖子内容\}\}/g, `${selectedTweet.snippet || selectedTweet.title}`)
-      .replace(/\{\{语气标签\}\}/g, selectedTone)
+      .replace(/\{\{语气\}\}/g, selectedTone)
+      .replace(/\{\{目的\}\}/g, selectedPurpose)
       .replace(/\{\{回复长度\}\}/g, lengthOptions.find((l) => l.value === selectedLength)?.label || '中');
 
     try {
@@ -414,6 +417,29 @@ export default function SearchTweetsCard() {
                         className={cn(
                           'px-3 py-1 text-xs rounded-full border transition-colors',
                           selectedTone === tag
+                            ? 'bg-gray-900 text-white border-gray-900'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                        )}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 目的选择 */}
+                <div className="space-y-2">
+                  <div className="text-[12px] font-medium text-foreground/80">目的</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {purposeTags.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => setSelectedPurpose(tag)}
+                        disabled={generatingComment}
+                        className={cn(
+                          'px-3 py-1 text-xs rounded-full border transition-colors',
+                          selectedPurpose === tag
                             ? 'bg-gray-900 text-white border-gray-900'
                             : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
                         )}
