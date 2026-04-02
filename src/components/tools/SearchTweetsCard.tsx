@@ -19,6 +19,12 @@ const lengthOptions = [
   { value: 'long', label: '长' },
 ];
 
+const contentTypeOptions = [
+  { value: 'all', label: '全部' },
+  { value: 'posts', label: '帖子' },
+  { value: 'users', label: '用户' },
+] as const;
+
 export default function SearchTweetsCard() {
   const [productUrl, setProductUrl] = useState('');
   const [productInfo, setProductInfo] = useState('');
@@ -34,6 +40,9 @@ export default function SearchTweetsCard() {
   const [generatingKeywords, setGeneratingKeywords] = useState(false);
   const [generatedKeywords, setGeneratedKeywords] = useState<string[]>([]);
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+
+  // 内容类型筛选
+  const [contentType, setContentType] = useState<'all' | 'posts' | 'users'>('all');
 
   // 语气和长度
   const [selectedTone, setSelectedTone] = useState<string>('共鸣');
@@ -107,7 +116,7 @@ export default function SearchTweetsCard() {
     setGeneratedComment('');
 
     try {
-      const results = await searchTwitter(queryToUse, { num: 10 });
+      const results = await searchTwitter(queryToUse, { num: 10, contentType });
       setSearchResults(results);
       if (results.length === 0) {
         toast.info('没有找到相关推文，尝试其他关键词');
@@ -257,6 +266,32 @@ export default function SearchTweetsCard() {
             )}
 
             {/* 搜索框和搜索按钮 */}
+            {/* 内容类型筛选 */}
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] text-muted-foreground">类型:</span>
+              <div className="flex gap-1">
+                {contentTypeOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      setContentType(option.value);
+                      setSearchResults([]);
+                      setSelectedTweet(null);
+                    }}
+                    disabled={searching}
+                    className={cn(
+                      'px-3 py-1 text-xs rounded-full border transition-colors',
+                      contentType === option.value
+                        ? 'bg-gray-900 text-white border-gray-900'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="flex gap-2">
               <Input
                 value={searchQuery}

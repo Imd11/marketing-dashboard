@@ -28,13 +28,26 @@ export async function searchTwitter(
   options: {
     num?: number;
     timeFilter?: string;
+    contentType?: 'posts' | 'users' | 'all';
   } = {},
 ): Promise<SerperResult[]> {
   if (!SERPER_API_KEY) {
     throw new Error('Serper API key not configured');
   }
 
-  const fullQuery = `${query} (site:twitter.com OR site:x.com) -filter:retweets`;
+  // Build content type filter
+  let contentFilter = '';
+  if (options.contentType === 'posts') {
+    // Filter for posts (status URLs) and discussions
+    contentFilter = '(site:twitter.com OR site:x.com) "status/" OR (site:twitter.com OR site:x.com) "thread"';
+  } else if (options.contentType === 'users') {
+    // Filter for user profiles (x.com/username format, not status pages)
+    contentFilter = '(site:twitter.com OR site:x.com) -"status/" -"thread/" -"search"';
+  } else {
+    contentFilter = '(site:twitter.com OR site:x.com) -filter:retweets';
+  }
+
+  const fullQuery = `${query} ${contentFilter}`;
   const body: Record<string, unknown> = {
     q: fullQuery,
     num: options.num || 10,
