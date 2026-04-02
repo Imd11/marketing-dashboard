@@ -1,13 +1,17 @@
 import { useMemo, useState } from 'react';
 import AppShell from '@/components/shell/AppShell';
 import SearchTweetsCard from '@/components/tools/SearchTweetsCard';
+import ResearchPostsCard from '@/components/tools/ResearchPostsCard';
 import { cn } from '@/lib/utils';
+import { RESEARCH_POST_SYSTEM } from '@/prompts/twitter';
 
 type ToolDef = {
   id: string;
   title: string;
   shortName: string;
   description: string;
+  systemPrompt?: string;
+  component: 'search' | 'research';
 };
 
 export default function Twitter() {
@@ -18,6 +22,15 @@ export default function Twitter() {
         title: '🔍 搜索推文',
         shortName: '🔍 搜索推文',
         description: '搜索 Twitter 上相关的讨论，生成推广评论',
+        component: 'search',
+      },
+      {
+        id: 'twitter-research-posts',
+        title: '📊 调研帖子',
+        shortName: '📊 调研帖子',
+        description: '生成调研型推文，引发用户讨论和反馈',
+        systemPrompt: RESEARCH_POST_SYSTEM,
+        component: 'research',
       },
     ],
     []
@@ -64,7 +77,15 @@ export default function Twitter() {
             const isActive = tool.id === activeToolId;
             return (
               <div key={tool.id} className={cn(!isActive && 'hidden')}>
-                <SearchTweetsCard />
+                {tool.component === 'search' && <SearchTweetsCard />}
+                {tool.component === 'research' && (
+                  <ResearchPostsCard
+                    toolId={tool.id}
+                    title={tool.title}
+                    description={tool.description}
+                    systemPrompt={tool.systemPrompt || ''}
+                  />
+                )}
               </div>
             );
           })}
