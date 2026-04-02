@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react';
 import AppShell from '@/components/shell/AppShell';
 import SearchTweetsCard from '@/components/tools/SearchTweetsCard';
 import ResearchPostsCard from '@/components/tools/ResearchPostsCard';
+import ProductLaunchCard from '@/components/tools/ProductLaunchCard';
 import { cn } from '@/lib/utils';
-import { RESEARCH_POST_SYSTEM } from '@/prompts/twitter';
+import { RESEARCH_POST_SYSTEM, PRODUCT_LAUNCH_SYSTEM } from '@/prompts/twitter';
 
 type ToolDef = {
   id: string;
@@ -11,7 +12,7 @@ type ToolDef = {
   shortName: string;
   description: string;
   systemPrompt?: string;
-  component: 'search' | 'research';
+  component: 'search' | 'research' | 'launch';
 };
 
 export default function Twitter() {
@@ -31,6 +32,14 @@ export default function Twitter() {
         description: '生成调研型推文，引发用户讨论和反馈',
         systemPrompt: RESEARCH_POST_SYSTEM,
         component: 'research',
+      },
+      {
+        id: 'twitter-product-launch',
+        title: '🚀 产品发布',
+        shortName: '🚀 产品发布',
+        description: '生成产品发布推文，正式向用户介绍产品',
+        systemPrompt: PRODUCT_LAUNCH_SYSTEM,
+        component: 'launch',
       },
     ],
     []
@@ -80,6 +89,14 @@ export default function Twitter() {
                 {tool.component === 'search' && <SearchTweetsCard />}
                 {tool.component === 'research' && (
                   <ResearchPostsCard
+                    toolId={tool.id}
+                    title={tool.title}
+                    description={tool.description}
+                    systemPrompt={tool.systemPrompt || ''}
+                  />
+                )}
+                {tool.component === 'launch' && (
+                  <ProductLaunchCard
                     toolId={tool.id}
                     title={tool.title}
                     description={tool.description}
