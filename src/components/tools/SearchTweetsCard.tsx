@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Loader2, Search, ExternalLink, Copy, MessageSquare } from 'lucide-react';
+import { Loader2, Search, ExternalLink, Copy, MessageSquare, Sparkles } from 'lucide-react';
 import { Streamdown } from 'streamdown';
 import { searchTwitter, type SerperResult } from '@/lib/api/serper';
 import { useGenerate } from '@/hooks/useGenerate';
-import { TWITTER_DISCUSSION_SYSTEM } from '@/prompts/twitter';
+import { TWITTER_DISCUSSION_SYSTEM, KEYWORD_GENERATE_SYSTEM } from '@/prompts/twitter';
 import { cn } from '@/lib/utils';
 
 const toneTags = ['感谢', '思考', '洞察', '共鸣', '提问'] as const;
@@ -171,6 +171,11 @@ export default function SearchTweetsCard() {
   const [generatingComment, setGeneratingComment] = useState(false);
   const { generate, cancel } = useGenerate();
 
+  // 关键词生成
+  const [generatingKeywords, setGeneratingKeywords] = useState(false);
+  const [generatedKeywords, setGeneratedKeywords] = useState<string[]>([]);
+  const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+
   // 每个推文的语气和长度选项
   const [tweetTones, setTweetTones] = useState<Record<string, string>>({});
   const [tweetLengths, setTweetLengths] = useState<Record<string, string>>({});
@@ -178,9 +183,59 @@ export default function SearchTweetsCard() {
   const getTweetTone = (link: string) => tweetTones[link] || '共鸣';
   const getTweetLength = (link: string) => tweetLengths[link] || 'medium';
 
+  async function onGenerateKeywords() {
+    if (!productUrl.trim() && !productInfo.trim()) {
+      toast.error('请输入产品网址或产品介绍');
+      return;
+    }
+
+    setGeneratingKeywords(true);
+    setGeneratedKeywords([]);
+    setSelectedKeywords([]);
+
+    const resolvedPrompt = KEYWORD_GENERATE_SYSTEM
+      .replace(/\{\{产品网址\}\}/g, productUrl || '未提供')
+      .replace(/\{\{产品介绍\}\}/g, productInfo);
+
+    try {
+      let fullOutput = '';
+      await generate(
+        { systemPrompt: resolvedPrompt, productName: '', rawThoughts: '' },
+        (chunk) => {
+          fullOutput += chunk;
+          // 解析关键词：每行一个
+          const lines = fullOutput.split('\n').filter((line) => line.trim().length > 0);
+          setGeneratedKeywords(lines);
+        }
+      );
+      toast.success('关键词已生成');
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        toast.error('关键词生成失败');
+      }
+    } finally {
+      setGeneratingKeywords(false);
+    }
+  }
+
+  function toggleKeyword(keyword: string) {
+    setSelectedKeywords((prev) =>
+      prev.includes(keyword)
+        ? prev.filter((k) => k !== keyword)
+        : [...prev, keyword]
+    );
+  }
+
+  function selectKeyword(keyword: string) {
+    setSearchQuery(keyword);
+    setSelectedKeywords([keyword]);
+  }
+
   async function onSearch() {
-    if (!searchQuery.trim()) {
-      toast.error('请输入搜索关键词');
+    const queryToUse = selectedKeywords.length > 0 ? selectedKeywords[0] : searchQuery;
+
+    if (!queryToUse.trim()) {
+      toast.error('请选择或输入搜索关键词');
       return;
     }
 
@@ -192,7 +247,7 @@ export default function SearchTweetsCard() {
     setTweetLengths({});
 
     try {
-      const results = await searchTwitter(searchQuery, { num: 10 });
+      const results = await searchTwitter(queryToUse, { num: 10 });
       setSearchResults(results);
       if (results.length === 0) {
         toast.info('没有找到相关推文，尝试其他关键词');
@@ -249,7 +304,8 @@ export default function SearchTweetsCard() {
     }
   }
 
-  const canSearch = !searching && searchQuery.trim().length > 0;
+  const canSearch = !searching && (selectedKeywords.length > 0 || searchQuery.trim().length > 0);
+  const canGenerateKeywords = !generatingKeywords && (productUrl.trim().length > 0 || productInfo.trim().length > 0);
 
   return (
     <Card className="border-border/60 bg-white shadow-none">
@@ -258,11 +314,11 @@ export default function SearchTweetsCard() {
         <div>
           <div className="text-[15px] font-semibold tracking-tight">🔍 搜索推文</div>
           <div className="mt-1 text-sm text-muted-foreground">
-            搜索 Twitter 上的相关讨论，生成讨论型回复（市场调研）
+            搜索 Twitter 上的目标用户讨论，生成讨论型回复（市场调研）
           </div>
         </div>
 
-        {/* Search Input */}
+        {/* Product Info Input */}
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
@@ -271,52 +327,103 @@ export default function SearchTweetsCard() {
                 value={productUrl}
                 onChange={(e) => setProductUrl(e.target.value)}
                 placeholder="https://your-product.com"
-                disabled={searching}
+                disabled={searching || generatingKeywords}
                 className="h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25"
               />
             </div>
             <div className="space-y-2">
-              <div className="text-[12px] font-medium text-foreground/80">搜索关键词</div>
+              <div className="text-[12px] font-medium text-foreground/80">产品介绍</div>
               <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="例如：marketing automation, AI tools"
-                disabled={searching}
+                value={productInfo}
+                onChange={(e) => setProductInfo(e.target.value)}
+                placeholder="产品名称、功能、卖点..."
+                disabled={searching || generatingKeywords}
                 className="h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="text-[12px] font-medium text-foreground/80">产品介绍</div>
-            <div className="h-[80px] overflow-y-auto rounded-md border border-gray-200 bg-transparent">
-              <Textarea
-                value={productInfo}
-                onChange={(e) => setProductInfo(e.target.value)}
-                placeholder="输入你的产品名称、功能、卖点，用于生成更精准的讨论回复..."
-                disabled={generatingComment}
-                className="h-full bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25 resize-none"
-              />
-            </div>
-          </div>
-
+          {/* AI 生成关键词按钮 */}
           <Button
-            onClick={onSearch}
-            disabled={!canSearch}
+            onClick={onGenerateKeywords}
+            disabled={!canGenerateKeywords}
+            variant="outline"
             className="w-full gap-2"
           >
-            {searching ? (
+            {generatingKeywords ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                搜索中…
+                AI 生成关键词中…
               </>
             ) : (
               <>
-                <Search className="h-4 w-4" />
-                搜索 10 条推文
+                <Sparkles className="h-4 w-4" />
+                AI 生成精准关键词
               </>
             )}
           </Button>
+
+          {/* 生成的关键词展示 */}
+          {generatedKeywords.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-[12px] font-medium text-foreground/80">
+                AI 生成的关键词（点击选择一个或多个）
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {generatedKeywords.map((keyword, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => toggleKeyword(keyword)}
+                    className={cn(
+                      'px-3 py-1 text-xs rounded-full border transition-colors',
+                      selectedKeywords.includes(keyword)
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-primary/50'
+                    )}
+                  >
+                    {keyword}
+                  </button>
+                ))}
+              </div>
+              {selectedKeywords.length > 0 && (
+                <div className="text-[11px] text-muted-foreground">
+                  已选择: {selectedKeywords.join(', ')}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 搜索框和搜索按钮 */}
+          <div className="flex gap-2">
+            <Input
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setSelectedKeywords([]);
+              }}
+              placeholder="或直接输入搜索关键词..."
+              disabled={searching}
+              className="flex-1 h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25"
+            />
+            <Button
+              onClick={onSearch}
+              disabled={!canSearch}
+              className="gap-2"
+            >
+              {searching ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  搜索中…
+                </>
+              ) : (
+                <>
+                  <Search className="h-4 w-4" />
+                  搜索
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Results */}
@@ -350,7 +457,7 @@ export default function SearchTweetsCard() {
         {/* Empty State */}
         {searchResults.length === 0 && !searching && (
           <div className="text-center py-8 text-sm text-muted-foreground">
-            输入关键词搜索 Twitter 上的相关讨论
+            输入产品信息，AI 生成精准关键词，再搜索目标用户讨论
           </div>
         )}
       </div>
