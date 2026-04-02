@@ -95,7 +95,7 @@ export default function Reddit() {
                     'w-full rounded-md px-2 py-2 text-left',
                     'text-[14px] text-foreground/85',
                     'transition-colors',
-                    'hover:bg-gray-50 hover:text-foreground',
+                    !active && 'hover:bg-gray-50 hover:text-foreground',
                     active && 'bg-gray-100 font-semibold text-foreground'
                   )}
                 >
