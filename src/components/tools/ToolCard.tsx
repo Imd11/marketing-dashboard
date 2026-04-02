@@ -123,7 +123,7 @@ export default function ToolCard({
                   disabled={!canGenerate}
                   className='h-10 rounded-md'
                 >
-                  ✨ 开始生成 (Generate)
+                  开始生成
                 </Button>
               )}
               {loading && (

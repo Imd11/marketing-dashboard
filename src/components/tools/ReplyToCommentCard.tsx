@@ -223,7 +223,7 @@ export default function ReplyToCommentCard({
                   disabled={!canGenerate}
                   className='h-10 rounded-md'
                 >
-                  ✨ 开始生成
+                  开始生成
                 </Button>
               )}
               {loading && (

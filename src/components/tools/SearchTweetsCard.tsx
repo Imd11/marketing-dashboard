@@ -99,7 +99,7 @@ export default function SearchTweetsCard() {
   const [selectedTweet, setSelectedTweet] = useState<SerperResult | null>(null);
   const [generatedComment, setGeneratedComment] = useState('');
   const [generatingComment, setGeneratingComment] = useState(false);
-  const { generate, cancel } = useGenerate();
+  const { generate, cancel, loading } = useGenerate();
 
   async function onSearch() {
     if (!query.trim()) {
