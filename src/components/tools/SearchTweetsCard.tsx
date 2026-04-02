@@ -19,148 +19,6 @@ const lengthOptions = [
   { value: 'long', label: '长' },
 ];
 
-interface TweetCardProps {
-  tweet: SerperResult;
-  productUrl: string;
-  productInfo: string;
-  onGenerateComment: (tweet: SerperResult, tone: string, length: string) => void;
-  generatingComment: boolean;
-  generatedComment: string;
-  onCopyComment: () => void;
-  selectedTone: string;
-  selectedLength: string;
-  onToneChange: (tone: string) => void;
-  onLengthChange: (length: string) => void;
-  disabled: boolean;
-}
-
-function TweetCard({
-  tweet,
-  productUrl,
-  productInfo,
-  onGenerateComment,
-  generatingComment,
-  generatedComment,
-  onCopyComment,
-  selectedTone,
-  selectedLength,
-  onToneChange,
-  onLengthChange,
-  disabled,
-}: TweetCardProps) {
-  return (
-    <div className="border border-border/60 rounded-lg p-4 space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm leading-snug">{tweet.title}</p>
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{tweet.snippet}</p>
-          {tweet.date && <p className="text-xs text-muted-foreground/70 mt-1">{tweet.date}</p>}
-        </div>
-        <a
-          href={tweet.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ExternalLink className="h-4 w-4" />
-        </a>
-      </div>
-
-      {!generatedComment ? (
-        <>
-          {/* 语气和长度选项 */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] text-muted-foreground">语气:</span>
-              <div className="flex gap-1 flex-wrap">
-                {toneTags.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => onToneChange(tag)}
-                    disabled={disabled}
-                    className={cn(
-                      'px-2 py-0.5 text-[11px] rounded-full border transition-colors',
-                      selectedTone === tag
-                        ? 'bg-gray-900 text-white border-gray-900'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-                    )}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground">长短:</span>
-              <div className="flex gap-1">
-                {lengthOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => onLengthChange(option.value)}
-                    disabled={disabled}
-                    className={cn(
-                      'px-2 py-0.5 text-[11px] rounded-full border transition-colors',
-                      selectedLength === option.value
-                        ? 'bg-gray-900 text-white border-gray-900'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <Button
-            onClick={() => onGenerateComment(tweet, selectedTone, selectedLength)}
-            disabled={generatingComment || !productInfo.trim()}
-            size="sm"
-            className="w-full gap-1.5"
-          >
-            {generatingComment ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                生成中…
-              </>
-            ) : (
-              <>
-                <MessageSquare className="h-4 w-4" />
-                生成讨论回复
-              </>
-            )}
-          </Button>
-        </>
-      ) : (
-        <div className="space-y-2">
-          <div className="rounded-md bg-muted/50 p-3 text-sm max-h-[200px] overflow-y-auto">
-            <Streamdown>{generatedComment}</Streamdown>
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={onCopyComment} size="sm" variant="outline" className="flex-1 gap-1.5">
-              <Copy className="h-3.5 w-3.5" />
-              复制
-            </Button>
-            <a
-              href={tweet.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1"
-            >
-              <Button size="sm" variant="outline" className="w-full gap-1.5">
-                <ExternalLink className="h-3.5 w-3.5" />
-                打开原帖
-              </Button>
-            </a>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function SearchTweetsCard() {
   const [productUrl, setProductUrl] = useState('');
   const [productInfo, setProductInfo] = useState('');
@@ -170,19 +28,16 @@ export default function SearchTweetsCard() {
   const [selectedTweet, setSelectedTweet] = useState<SerperResult | null>(null);
   const [generatedComment, setGeneratedComment] = useState('');
   const [generatingComment, setGeneratingComment] = useState(false);
-  const { generate, cancel } = useGenerate();
+  const { generate } = useGenerate();
 
   // 关键词生成
   const [generatingKeywords, setGeneratingKeywords] = useState(false);
   const [generatedKeywords, setGeneratedKeywords] = useState<string[]>([]);
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
 
-  // 每个推文的语气和长度选项
-  const [tweetTones, setTweetTones] = useState<Record<string, string>>({});
-  const [tweetLengths, setTweetLengths] = useState<Record<string, string>>({});
-
-  const getTweetTone = (link: string) => tweetTones[link] || '共鸣';
-  const getTweetLength = (link: string) => tweetLengths[link] || 'medium';
+  // 语气和长度
+  const [selectedTone, setSelectedTone] = useState<string>('共鸣');
+  const [selectedLength, setSelectedLength] = useState<string>('medium');
 
   async function onGenerateKeywords() {
     if (!productUrl.trim() && !productInfo.trim()) {
@@ -196,7 +51,6 @@ export default function SearchTweetsCard() {
 
     let scrapedContent = '';
 
-    // 如果提供了产品网址，用 Jina Reader 抓取页面内容
     if (productUrl.trim()) {
       try {
         toast.info('正在抓取产品页面...');
@@ -217,7 +71,6 @@ export default function SearchTweetsCard() {
         { systemPrompt: resolvedPrompt, productName: '', rawThoughts: '' },
         (chunk) => {
           fullOutput += chunk;
-          // 解析关键词：每行一个
           const lines = fullOutput.split('\n').filter((line) => line.trim().length > 0);
           setGeneratedKeywords(lines);
         }
@@ -240,11 +93,6 @@ export default function SearchTweetsCard() {
     );
   }
 
-  function selectKeyword(keyword: string) {
-    setSearchQuery(keyword);
-    setSelectedKeywords([keyword]);
-  }
-
   async function onSearch() {
     const queryToUse = selectedKeywords.length > 0 ? selectedKeywords[0] : searchQuery;
 
@@ -257,8 +105,6 @@ export default function SearchTweetsCard() {
     setSearchResults([]);
     setSelectedTweet(null);
     setGeneratedComment('');
-    setTweetTones({});
-    setTweetLengths({});
 
     try {
       const results = await searchTwitter(queryToUse, { num: 10 });
@@ -274,21 +120,25 @@ export default function SearchTweetsCard() {
     }
   }
 
-  async function onGenerateComment(tweet: SerperResult, tone: string, length: string) {
+  async function onGenerateComment() {
+    if (!selectedTweet) {
+      toast.error('请先选择一个帖子');
+      return;
+    }
+
     if (!productInfo.trim()) {
       toast.error('请输入产品介绍');
       return;
     }
 
-    setSelectedTweet(tweet);
     setGeneratingComment(true);
 
     const resolvedPrompt = TWITTER_DISCUSSION_SYSTEM
       .replace(/\{\{产品网址\}\}/g, productUrl || '未提供')
       .replace(/\{\{产品介绍\}\}/g, productInfo)
-      .replace(/\{\{帖子内容\}\}/g, `${tweet.snippet || tweet.title}`)
-      .replace(/\{\{语气标签\}\}/g, tone)
-      .replace(/\{\{回复长度\}\}/g, lengthOptions.find((l) => l.value === length)?.label || '中');
+      .replace(/\{\{帖子内容\}\}/g, `${selectedTweet.snippet || selectedTweet.title}`)
+      .replace(/\{\{语气标签\}\}/g, selectedTone)
+      .replace(/\{\{回复长度\}\}/g, lengthOptions.find((l) => l.value === selectedLength)?.label || '中');
 
     try {
       let fullOutput = '';
@@ -320,6 +170,7 @@ export default function SearchTweetsCard() {
 
   const canSearch = !searching && (selectedKeywords.length > 0 || searchQuery.trim().length > 0);
   const canGenerateKeywords = !generatingKeywords && (productUrl.trim().length > 0 || productInfo.trim().length > 0);
+  const canGenerate = !generatingComment && selectedTweet && productInfo.trim().length > 0;
 
   return (
     <Card className="border-border/60 bg-white shadow-none">
@@ -381,7 +232,7 @@ export default function SearchTweetsCard() {
           {generatedKeywords.length > 0 && (
             <div className="space-y-2">
               <div className="text-[12px] font-medium text-foreground/80">
-                AI 生成的关键词（点击选择一个或多个）
+                AI 生成的关键词（点击选择一个）
               </div>
               <div className="flex flex-wrap gap-2">
                 {generatedKeywords.map((keyword, i) => (
@@ -400,11 +251,6 @@ export default function SearchTweetsCard() {
                   </button>
                 ))}
               </div>
-              {selectedKeywords.length > 0 && (
-                <div className="text-[11px] text-muted-foreground">
-                  已选择: {selectedKeywords.join(', ')}
-                </div>
-              )}
             </div>
           )}
 
@@ -440,30 +286,166 @@ export default function SearchTweetsCard() {
           </div>
         </div>
 
-        {/* Results */}
+        {/* Search Results - List only */}
         {searchResults.length > 0 && (
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="text-[12px] font-medium text-foreground/80">
-              搜索结果 ({searchResults.length})
+              搜索结果 ({searchResults.length})，点击选择一个帖子
             </div>
-            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+            <div className="space-y-1 max-h-[200px] overflow-y-auto pr-1">
               {searchResults.map((tweet) => (
-                <TweetCard
+                <button
                   key={tweet.link}
-                  tweet={tweet}
-                  productUrl={productUrl}
-                  productInfo={productInfo}
-                  onGenerateComment={onGenerateComment}
-                  generatingComment={generatingComment && selectedTweet?.link === tweet.link}
-                  generatedComment={selectedTweet?.link === tweet.link ? generatedComment : ''}
-                  onCopyComment={onCopyComment}
-                  selectedTone={getTweetTone(tweet.link)}
-                  selectedLength={getTweetLength(tweet.link)}
-                  onToneChange={(tone) => setTweetTones((prev) => ({ ...prev, [tweet.link]: tone }))}
-                  onLengthChange={(length) => setTweetLengths((prev) => ({ ...prev, [tweet.link]: length }))}
-                  disabled={generatingComment}
-                />
+                  type="button"
+                  onClick={() => {
+                    setSelectedTweet(tweet);
+                    setGeneratedComment('');
+                  }}
+                  className={cn(
+                    'w-full text-left rounded-md px-3 py-2 transition-colors',
+                    selectedTweet?.link === tweet.link
+                      ? 'bg-primary/10 border border-primary/30'
+                      : 'hover:bg-gray-50 border border-transparent'
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{tweet.title}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                        {tweet.snippet || tweet.title}
+                      </p>
+                    </div>
+                    {selectedTweet?.link === tweet.link && (
+                      <span className="text-xs text-primary shrink-0">已选择</span>
+                    )}
+                  </div>
+                </button>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Master-Detail Layout */}
+        {selectedTweet && (
+          <div className="border-t border-border pt-6">
+            <div className="text-[12px] font-medium text-foreground/80 mb-3">
+              生成讨论回复
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left: 操作区 */}
+              <div className="space-y-4">
+                {/* 帖子信息 */}
+                <div className="rounded-md border border-gray-200 p-4 space-y-2">
+                  <div className="text-[12px] font-medium text-foreground/80">帖子内容</div>
+                  <p className="text-sm leading-relaxed">{selectedTweet.snippet || selectedTweet.title}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{selectedTweet.date || '未知日期'}</span>
+                    <a
+                      href={selectedTweet.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary hover:underline flex items-center gap-1"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      打开原帖
+                    </a>
+                  </div>
+                </div>
+
+                {/* 语气选择 */}
+                <div className="space-y-2">
+                  <div className="text-[12px] font-medium text-foreground/80">语气</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {toneTags.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => setSelectedTone(tag)}
+                        disabled={generatingComment}
+                        className={cn(
+                          'px-3 py-1 text-xs rounded-full border transition-colors',
+                          selectedTone === tag
+                            ? 'bg-gray-900 text-white border-gray-900'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                        )}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 长短选择 */}
+                <div className="space-y-2">
+                  <div className="text-[12px] font-medium text-foreground/80">长短</div>
+                  <div className="flex gap-2">
+                    {lengthOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setSelectedLength(option.value)}
+                        disabled={generatingComment}
+                        className={cn(
+                          'px-3 py-1 text-xs rounded-full border transition-colors',
+                          selectedLength === option.value
+                            ? 'bg-gray-900 text-white border-gray-900'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                        )}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 生成按钮 */}
+                <Button
+                  onClick={onGenerateComment}
+                  disabled={!canGenerate}
+                  className="w-full gap-2"
+                >
+                  {generatingComment ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      生成中…
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquare className="h-4 w-4" />
+                      生成讨论回复
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Right: 输出区 */}
+              <div className="relative">
+                <div className="absolute right-0 top-0 flex gap-2">
+                  {generatedComment && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onCopyComment}
+                      className="h-8 gap-1.5 border-black/20 bg-white/70 backdrop-blur"
+                    >
+                      <Copy className="h-4 w-4" />
+                      复制
+                    </Button>
+                  )}
+                </div>
+
+                <div className="rounded-md border border-black/20 bg-muted/30 p-4 h-[300px] overflow-y-auto">
+                  {generatedComment ? (
+                    <div className="prose prose-xs max-w-none prose-headings:tracking-tight prose-p:leading-relaxed">
+                      <Streamdown>{generatedComment}</Streamdown>
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground text-sm h-full flex items-center justify-center">
+                      {generatingComment ? '生成中…' : '选择帖子并点击生成后，结果将显示在这里'}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
