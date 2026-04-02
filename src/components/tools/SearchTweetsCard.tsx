@@ -286,7 +286,7 @@ export default function SearchTweetsCard() {
     const resolvedPrompt = TWITTER_DISCUSSION_SYSTEM
       .replace(/\{\{产品网址\}\}/g, productUrl || '未提供')
       .replace(/\{\{产品介绍\}\}/g, productInfo)
-      .replace(/\{\{帖子内容\}\}/g, `${tweet.title} - ${tweet.snippet}`)
+      .replace(/\{\{帖子内容\}\}/g, `${tweet.snippet || tweet.title}`)
       .replace(/\{\{语气标签\}\}/g, tone)
       .replace(/\{\{回复长度\}\}/g, lengthOptions.find((l) => l.value === length)?.label || '中');
 
