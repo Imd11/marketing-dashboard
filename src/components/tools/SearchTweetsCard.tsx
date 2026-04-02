@@ -334,11 +334,15 @@ export default function SearchTweetsCard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left: 操作区 */}
               <div className="space-y-4">
-                {/* 帖子信息 */}
-                <div className="rounded-md border border-gray-200 p-4 space-y-2">
-                  <div className="text-[12px] font-medium text-foreground/80">帖子内容</div>
-                  <p className="text-sm leading-relaxed">{selectedTweet.snippet || selectedTweet.title}</p>
-                  <div className="flex items-center justify-between">
+                {/* 帖子信息 - 标题+摘要 */}
+                <div className="rounded-md border border-gray-200 p-4 space-y-3">
+                  <div className="text-[12px] font-medium text-foreground/80">帖子标题</div>
+                  <p className="text-sm font-medium leading-relaxed">{selectedTweet.title}</p>
+                  <div className="text-[12px] font-medium text-foreground/80">帖子摘要</div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {selectedTweet.snippet || '无摘要'}
+                  </p>
+                  <div className="flex items-center justify-between pt-1">
                     <span className="text-xs text-muted-foreground">{selectedTweet.date || '未知日期'}</span>
                     <a
                       href={selectedTweet.link}
