@@ -44,10 +44,16 @@ export default function ToolCard({
   async function onGenerate() {
     if (!canGenerate) return;
 
+    // Replace placeholders in system prompt
+    const resolvedPrompt = systemPrompt
+      .replace(/\{\{productName\}\}/g, productName || '未提供')
+      .replace(/\{\{productIntro\}\}/g, productIntro || '未提供')
+      .replace(/\{\{rawThoughts\}\}/g, rawThoughts || '未提供');
+
     // Capture output for storage
     let fullOutput = '';
     await generate(
-      { systemPrompt, productName, rawThoughts: `${productIntro ? '产品介绍：' + productIntro + '\n\n' : ''}${rawThoughts}` },
+      { systemPrompt: resolvedPrompt, productName, rawThoughts },
       (chunk) => {
         fullOutput += chunk;
         setOutput(fullOutput);
