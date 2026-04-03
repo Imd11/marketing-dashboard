@@ -35,12 +35,13 @@ export default function CommentPromotionCard({
   const {
     originalPost,
     productInfo,
+    keyMessage,
     selectedTones: selectedTonesStr,
     length,
     output,
     setField,
     setOutput,
-  } = useToolStorage(toolId, ['originalPost', 'productInfo', 'selectedTones', 'length']);
+  } = useToolStorage(toolId, ['originalPost', 'productInfo', 'keyMessage', 'selectedTones', 'length']);
   const { loading, generate, cancel } = useGenerate();
 
   const selectedTones = selectedTonesStr ? selectedTonesStr.split(',').filter(Boolean) : [];
@@ -54,6 +55,7 @@ export default function CommentPromotionCard({
   };
   const setOriginalPost = (value: string) => setField('originalPost', value);
   const setProductInfo = (value: string) => setField('productInfo', value);
+  const setKeyMessage = (value: string) => setField('keyMessage', value);
   const setLength = (len: string) => setField('length', len);
 
   const canGenerate = !loading && (originalPost.trim().length > 0 || productInfo.trim().length > 0);
@@ -68,6 +70,7 @@ export default function CommentPromotionCard({
     const resolvedPrompt = systemPrompt
       .replace(/\{\{originalPost\}\}/g, originalPost || '未提供')
       .replace(/\{\{productInfo\}\}/g, productInfo || '未提供')
+      .replace(/\{\{keyMessage\}\}/g, keyMessage || '未提供')
       .replace(/\{\{tone\}\}/g, toneValue ? `${toneValue.label}：${toneValue.definition}` : '分享经验')
       .replace(/\{\{length\}\}/g, lengthOptions.find((l) => l.value === length)?.label === '短' ? '1-2句话' : lengthOptions.find((l) => l.value === length)?.label === '中' ? '3-5句话' : '尽量详细但不超过 Reddit 评论长度限制');
 
@@ -123,11 +126,26 @@ export default function CommentPromotionCard({
               <div className='text-[12px] font-medium text-foreground/80'>
                 产品信息
               </div>
-              <div className='h-[100px] overflow-y-auto rounded-md border border-gray-200 bg-transparent'>
+              <div className='h-[80px] overflow-y-auto rounded-md border border-gray-200 bg-transparent'>
                 <Textarea
                   value={productInfo}
                   onChange={(e) => setProductInfo(e.target.value)}
                   placeholder='输入你的产品名称、核心功能、卖点等...'
+                  disabled={loading}
+                  className='h-full bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25 resize-none'
+                />
+              </div>
+            </div>
+
+            <div className='space-y-2'>
+              <div className='text-[12px] font-medium text-foreground/80'>
+                核心内容（想表达的重点）
+              </div>
+              <div className='h-[80px] overflow-y-auto rounded-md border border-gray-200 bg-transparent'>
+                <Textarea
+                  value={keyMessage}
+                  onChange={(e) => setKeyMessage(e.target.value)}
+                  placeholder='你想通过这篇评论传达什么核心信息？比如：强调易用性、分享使用体验、提出解决方案等...'
                   disabled={loading}
                   className='h-full bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25 resize-none'
                 />
