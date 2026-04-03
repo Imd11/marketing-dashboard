@@ -110,13 +110,13 @@ export default function ToolCard({
 
             <div className='space-y-2'>
               <div className='text-[12px] font-medium text-foreground/80'>
-                核心内容
+                核心表达观点
               </div>
               <div className='h-[100px] overflow-y-auto rounded-md border border-gray-200 bg-transparent'>
                 <Textarea
                   value={rawThoughts}
                   onChange={(e) => setRawThoughts(e.target.value)}
-                  placeholder='你想通过这篇帖子传达什么核心信息？比如：强调易用性、分享使用体验、提出解决方案等…'
+                  placeholder='你想通过这篇帖子传达什么核心观点？比如：强调易用性、分享使用体验、提出解决方案等…'
                   disabled={loading}
                   className='h-full bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25 resize-none'
                 />
