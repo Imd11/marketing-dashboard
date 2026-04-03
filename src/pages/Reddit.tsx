@@ -2,12 +2,14 @@ import { useMemo, useState } from 'react';
 import AppShell from '@/components/shell/AppShell';
 import ToolCard from '@/components/tools/ToolCard';
 import ReplyToCommentCard from '@/components/tools/ReplyToCommentCard';
+import CommentPromotionCard from '@/components/tools/CommentPromotionCard';
 import { cn } from '@/lib/utils';
 import {
   HELP_POST_SYSTEM,
   DM_PROMOTION_SYSTEM,
   PROMOTION_POST_SYSTEM,
   REPLY_TO_COMMENT_SYSTEM,
+  COMMENT_PROMOTION_SYSTEM,
 } from '@/prompts/reddit';
 
 type ToolDef = {
@@ -16,7 +18,7 @@ type ToolDef = {
   shortName: string;
   description: string;
   systemPrompt: string;
-  has3Inputs?: boolean;
+  component: 'tool' | 'reply' | 'comment';
 };
 
 export default function Reddit() {
@@ -28,6 +30,7 @@ export default function Reddit() {
         shortName: '❓ Reddit求助帖',
         description: '把你的中文问题改写成适合发布在 Reddit 的英文提问贴。',
         systemPrompt: HELP_POST_SYSTEM,
+        component: 'tool',
       },
       {
         id: 'reddit-dm-promotion',
@@ -35,6 +38,7 @@ export default function Reddit() {
         shortName: '📨 Reddit私信DM推广',
         description: '撰写看起来不像广告的 Reddit 私信，获取真实用户反馈。',
         systemPrompt: DM_PROMOTION_SYSTEM,
+        component: 'tool',
       },
       {
         id: 'reddit-promotion-post',
@@ -42,6 +46,7 @@ export default function Reddit() {
         shortName: '🚀 Reddit推广贴',
         description: '将 PRD 转化为极具传播力的"个人极客故事"风格的 Reddit 推广贴。',
         systemPrompt: PROMOTION_POST_SYSTEM,
+        component: 'tool',
       },
       {
         id: 'reddit-reply-to-comment',
@@ -49,7 +54,15 @@ export default function Reddit() {
         shortName: '💭 再回复',
         description: '基于原帖内容和网友评论，生成自然的回复。',
         systemPrompt: REPLY_TO_COMMENT_SYSTEM,
-        has3Inputs: true,
+        component: 'reply',
+      },
+      {
+        id: 'reddit-comment-promotion',
+        title: '💬 评论区推广',
+        shortName: '💬 评论区推广',
+        description: '基于帖子内容生成自然的产品推广评论，直接可粘贴到评论区',
+        systemPrompt: COMMENT_PROMOTION_SYSTEM,
+        component: 'comment',
       },
     ],
     []
@@ -96,15 +109,24 @@ export default function Reddit() {
             const isActive = tool.id === activeToolId;
             return (
               <div key={tool.id} className={cn(!isActive && 'hidden')}>
-                {tool.has3Inputs ? (
+                {tool.component === 'tool' && (
+                  <ToolCard
+                    toolId={tool.id}
+                    title={tool.title}
+                    description={tool.description}
+                    systemPrompt={tool.systemPrompt}
+                  />
+                )}
+                {tool.component === 'reply' && (
                   <ReplyToCommentCard
                     toolId={tool.id}
                     title={tool.title}
                     description={tool.description}
                     systemPrompt={tool.systemPrompt}
                   />
-                ) : (
-                  <ToolCard
+                )}
+                {tool.component === 'comment' && (
+                  <CommentPromotionCard
                     toolId={tool.id}
                     title={tool.title}
                     description={tool.description}
