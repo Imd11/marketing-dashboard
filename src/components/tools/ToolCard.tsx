@@ -5,7 +5,6 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Loader2, Copy, X } from 'lucide-react';
@@ -14,7 +13,7 @@ import { useGenerate } from '@/hooks/useGenerate';
 import { useToolStorage } from '@/hooks/useToolStorage';
 
 export type ToolCardInput = {
-  productName: string;
+  productIntro: string;
   rawThoughts: string;
 };
 
@@ -31,29 +30,35 @@ export default function ToolCard({
   description: string;
   systemPrompt: SystemPrompt;
 }) {
-  const { productName, productIntro, rawThoughts, output, setField, setOutput } =
-    useToolStorage(toolId, ['productName', 'productIntro', 'rawThoughts']);
+  const { productIntro, rawThoughts, output, setField, setOutput } =
+    useToolStorage(toolId, ['productIntro', 'rawThoughts']);
   const { loading, generate, cancel } = useGenerate();
 
-  const setProductName = (value: string) => setField('productName', value);
   const setProductIntro = (value: string) => setField('productIntro', value);
   const setRawThoughts = (value: string) => setField('rawThoughts', value);
 
-  const canGenerate = !loading && (productName.trim().length > 0 || rawThoughts.trim().length > 0);
+  const canGenerate = !loading && (productIntro.trim().length > 0 || rawThoughts.trim().length > 0);
 
   async function onGenerate() {
     if (!canGenerate) return;
 
-    // Replace placeholders in system prompt
-    const resolvedPrompt = systemPrompt
-      .replace(/\{\{productName\}\}/g, productName || '未提供')
-      .replace(/\{\{productIntro\}\}/g, productIntro || '未提供')
-      .replace(/\{\{rawThoughts\}\}/g, rawThoughts || '未提供');
+    // Replace placeholders in system prompt (only if user filled them)
+    let resolvedPrompt = systemPrompt;
+    if (productIntro.trim()) {
+      resolvedPrompt = resolvedPrompt.replace(/\{\{productIntro\}\}/g, productIntro);
+    } else {
+      resolvedPrompt = resolvedPrompt.replace(/\{\{productIntro\}\}/g, '');
+    }
+    if (rawThoughts.trim()) {
+      resolvedPrompt = resolvedPrompt.replace(/\{\{rawThoughts\}\}/g, rawThoughts);
+    } else {
+      resolvedPrompt = resolvedPrompt.replace(/\{\{rawThoughts\}\}/g, '');
+    }
 
     // Capture output for storage
     let fullOutput = '';
     await generate(
-      { systemPrompt: resolvedPrompt, productName, rawThoughts },
+      { systemPrompt: resolvedPrompt, productName: '', rawThoughts },
       (chunk) => {
         fullOutput += chunk;
         setOutput(fullOutput);
@@ -88,21 +93,6 @@ export default function ToolCard({
           </div>
 
           <div className='mt-5 space-y-4'>
-            <div className='space-y-2'>
-              <div className='text-[12px] font-medium text-foreground/80'>
-                Product Name
-              </div>
-              <Input
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                placeholder='例如：Marketing Growth Dashboard'
-                disabled={loading}
-                className={
-                  'h-10 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25'
-                }
-              />
-            </div>
-
             <div className='space-y-2'>
               <div className='text-[12px] font-medium text-foreground/80'>
                 产品介绍
