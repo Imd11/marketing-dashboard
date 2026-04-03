@@ -4,7 +4,7 @@ export const PROMOTION_POST_SYSTEM = `# Role
 
 
 # Goal
-根据我提供的【产品介绍】和【PRD文档内容】，挖掘产品背后的开发动机，为我撰写一篇适合发布在 Reddit 上的**英文帖子**，并提供**中文翻译**。同时推荐适合发布的 Subreddits。
+根据我提供的【PRD文档内容/产品介绍】和【核心内容】，挖掘产品背后的开发动机，为我撰写一篇适合发布在 Reddit 上的**英文帖子**，并提供**中文翻译**。同时推荐适合发布的 Subreddits。
 
 
 # Critical Rules (必须遵守)
@@ -42,8 +42,8 @@ export const PROMOTION_POST_SYSTEM = `# Role
 
 # 用户输入
 
-**产品介绍：** {{productIntro}}
-**核心内容/PRD：** {{rawThoughts}}`;
+**PRD：** {{productIntro}}
+**核心内容：** {{rawThoughts}}`;
 
 export const promotionPostMeta = {
   id: 'reddit-promotion-post',

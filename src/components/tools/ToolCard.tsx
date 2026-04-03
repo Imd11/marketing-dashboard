@@ -95,13 +95,13 @@ export default function ToolCard({
           <div className='mt-5 space-y-4'>
             <div className='space-y-2'>
               <div className='text-[12px] font-medium text-foreground/80'>
-                产品介绍
+                PRD文档内容/产品介绍
               </div>
               <div className='h-[80px] overflow-y-auto rounded-md border border-gray-200 bg-transparent'>
                 <Textarea
                   value={productIntro}
                   onChange={(e) => setProductIntro(e.target.value)}
-                  placeholder='简要介绍你的产品是什么、能做什么、解决什么问题…'
+                  placeholder='把你的 PRD 或产品介绍粘贴进来…'
                   disabled={loading}
                   className='h-full bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25 resize-none'
                 />
@@ -110,13 +110,13 @@ export default function ToolCard({
 
             <div className='space-y-2'>
               <div className='text-[12px] font-medium text-foreground/80'>
-                Raw Thoughts
+                核心内容
               </div>
               <div className='h-[100px] overflow-y-auto rounded-md border border-gray-200 bg-transparent'>
                 <Textarea
                   value={rawThoughts}
                   onChange={(e) => setRawThoughts(e.target.value)}
-                  placeholder='把原始想法丢进来：PRD、痛点、想突出的卖点、受众、场景等…'
+                  placeholder='你想通过这篇帖子传达什么核心信息？比如：强调易用性、分享使用体验、提出解决方案等…'
                   disabled={loading}
                   className='h-full bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25 resize-none'
                 />
