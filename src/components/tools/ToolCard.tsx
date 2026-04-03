@@ -31,11 +31,12 @@ export default function ToolCard({
   description: string;
   systemPrompt: SystemPrompt;
 }) {
-  const { productName, rawThoughts, output, setField, setOutput } =
-    useToolStorage(toolId, ['productName', 'rawThoughts']);
+  const { productName, productIntro, rawThoughts, output, setField, setOutput } =
+    useToolStorage(toolId, ['productName', 'productIntro', 'rawThoughts']);
   const { loading, generate, cancel } = useGenerate();
 
   const setProductName = (value: string) => setField('productName', value);
+  const setProductIntro = (value: string) => setField('productIntro', value);
   const setRawThoughts = (value: string) => setField('rawThoughts', value);
 
   const canGenerate = !loading && (productName.trim().length > 0 || rawThoughts.trim().length > 0);
@@ -46,7 +47,7 @@ export default function ToolCard({
     // Capture output for storage
     let fullOutput = '';
     await generate(
-      { systemPrompt, productName, rawThoughts },
+      { systemPrompt, productName, rawThoughts: `${productIntro ? '产品介绍：' + productIntro + '\n\n' : ''}${rawThoughts}` },
       (chunk) => {
         fullOutput += chunk;
         setOutput(fullOutput);
@@ -98,13 +99,28 @@ export default function ToolCard({
 
             <div className='space-y-2'>
               <div className='text-[12px] font-medium text-foreground/80'>
+                产品介绍
+              </div>
+              <div className='h-[80px] overflow-y-auto rounded-md border border-gray-200 bg-transparent'>
+                <Textarea
+                  value={productIntro}
+                  onChange={(e) => setProductIntro(e.target.value)}
+                  placeholder='简要介绍你的产品是什么、能做什么、解决什么问题…'
+                  disabled={loading}
+                  className='h-full bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25 resize-none'
+                />
+              </div>
+            </div>
+
+            <div className='space-y-2'>
+              <div className='text-[12px] font-medium text-foreground/80'>
                 Raw Thoughts
               </div>
-              <div className='h-[120px] overflow-y-auto rounded-md border border-gray-200 bg-transparent'>
+              <div className='h-[100px] overflow-y-auto rounded-md border border-gray-200 bg-transparent'>
                 <Textarea
                   value={rawThoughts}
                   onChange={(e) => setRawThoughts(e.target.value)}
-                  placeholder='把原始想法丢进来：卖点、受众、场景、语气、你想强调的点…'
+                  placeholder='把原始想法丢进来：PRD、痛点、想突出的卖点、受众、场景等…'
                   disabled={loading}
                   className='h-full bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-foreground/25 resize-none'
                 />
