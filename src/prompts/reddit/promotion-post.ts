@@ -42,7 +42,7 @@ export const PROMOTION_POST_SYSTEM = `# Role
 
 # 用户输入
 
-**PRD：** {{productIntro}}
+**PRD文档内容/产品介绍：** {{productIntro}}
 **核心内容：** {{rawThoughts}}`;
 
 export const promotionPostMeta = {
