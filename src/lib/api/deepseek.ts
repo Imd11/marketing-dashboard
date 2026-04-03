@@ -8,8 +8,14 @@ export interface GenerateParams {
 }
 
 function buildUserPrompt(params: GenerateParams): string {
-  return `产品名称: ${params.productName}
-原始想法: ${params.rawThoughts}`;
+  const parts: string[] = [];
+  if (params.productName.trim()) {
+    parts.push(`产品名称: ${params.productName}`);
+  }
+  if (params.rawThoughts.trim()) {
+    parts.push(`核心表达观点: ${params.rawThoughts}`);
+  }
+  return parts.join('\n');
 }
 
 export async function streamGenerate(
