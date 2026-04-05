@@ -3,6 +3,7 @@ import AppShell from '@/components/shell/AppShell';
 import SearchTweetsCard from '@/components/tools/SearchTweetsCard';
 import ResearchPostsCard from '@/components/tools/ResearchPostsCard';
 import ProductLaunchCard from '@/components/tools/ProductLaunchCard';
+import TranslationCard from '@/components/tools/TranslationCard';
 import { cn } from '@/lib/utils';
 import { RESEARCH_POST_SYSTEM, PRODUCT_LAUNCH_SYSTEM } from '@/prompts/twitter';
 
@@ -12,12 +13,19 @@ type ToolDef = {
   shortName: string;
   description: string;
   systemPrompt?: string;
-  component: 'search' | 'research' | 'launch';
+  component: 'search' | 'research' | 'launch' | 'translate';
 };
 
 export default function Twitter() {
   const tools: ToolDef[] = useMemo(
     () => [
+      {
+        id: 'twitter-translate',
+        title: '🌐 AI 翻译',
+        shortName: '🌐 AI 翻译',
+        description: '智能翻译文本，支持多种语言和风格',
+        component: 'translate',
+      },
       {
         id: 'twitter-search-tweets',
         title: '🔍 搜索推文',
@@ -103,6 +111,7 @@ export default function Twitter() {
                     systemPrompt={tool.systemPrompt || ''}
                   />
                 )}
+                {tool.component === 'translate' && <TranslationCard />}
               </div>
             );
           })}
